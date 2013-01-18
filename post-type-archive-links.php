@@ -78,7 +78,7 @@ class HPTAL_MetaBox
 	public function add_meta_box()
 	{
 		add_meta_box(
-			'hptal-metabox'
+			 'hptal-metabox'
 			,__( 'Post Types', 'hptal-textdomain' )
 			,array( $this, 'metabox' )
 			,'nav-menus'
@@ -100,7 +100,7 @@ class HPTAL_MetaBox
 			return;
 
 		wp_register_script(
-			'hptal-ajax-script'
+			 'hptal-ajax-script'
 			,plugins_url( 'metabox.js', __FILE__ )
 			,array( 'jquery' )
 			,filemtime( plugin_dir_path( __FILE__ ).'metabox.js' )
@@ -110,11 +110,11 @@ class HPTAL_MetaBox
 
 		// Add nonce variable
 		wp_localize_script(
-			'hptal-ajax-script'
+			 'hptal-ajax-script'
 			,'hptal_obj'
 			,array(
 				'nonce' => wp_create_nonce( $this->nonce )
-			)
+			 )
 		);
 	}
 
@@ -129,45 +129,46 @@ class HPTAL_MetaBox
 
 		// Get post types
 		$post_types = get_post_types(
-			array(
-				'public'   => true
-			,'_builtin' => false
-			)
+			 array(
+				 'public'   => true
+				,'_builtin' => false
+			 )
 			,'object'
 		);
 
 		// #post-type-archive-checklist
-		echo '<ul id="post-type-archive-checklist">';
+		$html = '<ul id="post-type-archive-checklist">';
 		foreach ( $post_types as $pt )
 		{
-			printf(
-				'<li><label><input type="checkbox" value ="%s" />&nbsp;%s</label></li>'
+			$html .= sprintf(
+				 '<li><label><input type="checkbox" value ="%s" />&nbsp;%s</label></li>'
 				,esc_attr( $pt->name )
 				,esc_attr( $pt->labels->name )
 			);
 		}
-		echo '</ul>';
+		$html .= '</ul>';
 
-		printf(
-			'<img class="waiting" src="%s" alt="Loading">'
+		$html .= sprintf(
+			 '<img class="waiting" src="%s" alt="Loading">'
 			,admin_url( '/images/wpspin_light.gif' )
 		);
 
 		// 'Add to Menu' button
-		printf(
-			'<p class="button-controls"><span class="add-to-menu">%s</span></p>'
+		$html .= sprintf(
+			 '<p class="button-controls"><span class="add-to-menu">%s</span></p>'
 			,get_submit_button(
-				esc_attr__( 'Add to Menu' )
+				 esc_attr__( 'Add to Menu' )
 				,'button-secondary submit-add-to-menu'
 				,'add-post-type-menu-item'
 				,false
 				,array(
-					# 'id' => 'submit-post-type-archives'
-					#,'onClick' => 'return false;'
+					# 'id'       => 'submit-post-type-archives'
+					#,'onClick'  => 'return false;'
 					#,'disabled' => disabled( $nav_menu_selected_id, 0, false )
-				)
-			)
+				 )
+			 )
 		);
+		print $html;
 	}
 
 
@@ -189,10 +190,10 @@ class HPTAL_MetaBox
 				continue;
 
 			$menu_item_data= array(
-				'menu-item-title'  => esc_attr( $post_type_obj->labels->name )
-			,'menu-item-type'   => 'post_type_archive'
-			,'menu-item-object' => esc_attr( $post_type )
-			,'menu-item-url'    => get_post_type_archive_link( $post_type )
+				 'menu-item-title'  => esc_attr( $post_type_obj->labels->name )
+				,'menu-item-type'   => 'post_type_archive'
+				,'menu-item-object' => esc_attr( $post_type )
+				,'menu-item-url'    => get_post_type_archive_link( $post_type )
 			);
 
 			// Collect the items' IDs.
@@ -223,14 +224,18 @@ class HPTAL_MetaBox
 		if ( ! empty( $menu_items ) )
 		{
 			$args = array(
-				'after'       => ''
-			,'before'      => ''
-			,'link_after'  => ''
-			,'link_before' => ''
-			,'walker'      => new Walker_Nav_Menu_Edit
+				 'after'       => ''
+				,'before'      => ''
+				,'link_after'  => ''
+				,'link_before' => ''
+				,'walker'      => new Walker_Nav_Menu_Edit
 			);
 
-			echo walk_nav_menu_tree( $menu_items, 0, (object) $args );
+			echo walk_nav_menu_tree(
+				 $menu_items
+				,0
+				,(object) $args
+			);
 		}
 
 		// Finally don't forget to exit
@@ -250,7 +255,7 @@ class HPTAL_MetaBox
 		// Nonce check
 		check_ajax_referer( $this->nonce, 'hptal_nonce_query_arg' );
 
-		// Is a post type choosen?
+		// Is a post type chosen?
 		empty( $_POST['post_types'] ) AND exit;
 	}
 
@@ -306,7 +311,7 @@ class HPTAL_MetaBox
 				if ( $parent_item->db_id == $item->menu_item_parent )
 				{
 					$classes[] = 'current-menu-parent';
-					$items[$key]->current_item_parent = true;
+					$items[ $key ]->current_item_parent = true;
 				}
 
 				// If menu item is an ancestor
@@ -338,9 +343,7 @@ class HPTAL_MetaBox
 			$anc_id = get_post_meta( $anc_id, '_menu_item_menu_item_parent', true )
 			AND ! in_array( $anc_id, $active_anc_item_ids )
 		)
-		{
 			$active_anc_item_ids[] = $anc_id;
-		}
 
 		return $active_anc_item_ids;
 	}
