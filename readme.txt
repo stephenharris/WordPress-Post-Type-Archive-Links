@@ -1,9 +1,9 @@
 === Post Type Archive Link ===
-Contributors: stephenh1988
-Tags: post type archives, menu link, archives, navigation,
+Contributors: stephenharris, F J Kaiser
+Tags: post type archives, menu link, archives, navigation, metabox,
 Requires at least: 3.3
-Tested up to: 3.3.1
-Stable tag: 1.0.1
+Tested up to: 3.5
+Stable tag: 1.1
 
 Creates a metabox to the Appearance > Menu page to add post type archive links
 
@@ -14,7 +14,7 @@ Post Type Archive LInk creates a metabox on the Appearance > Menu admin page. Th
 
 == Installation ==
 
-Installation is standard and straight forward. 
+Installation is standard and straight forward.
 
 1. Upload `post-type-archive-links` folder (and all it's contents!) to the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
@@ -25,10 +25,15 @@ Installation is standard and straight forward.
 
 = Why are some post types missing? =
 
-The metabox will list only public custom post types 
+The metabox will list only public custom post types
 
 
 == Changelog ==
+
+= 1.1 =
+* Better maintainability (avoid touching JS files)
+* Static init now runs during <code>plugins_loaded</code> hook
+* Code cleanup and safer names
 
 = 1.0.1 =
 * Fixed enqueue bug
