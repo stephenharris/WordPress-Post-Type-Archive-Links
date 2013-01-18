@@ -40,6 +40,12 @@ class HPTAL_MetaBox
 	 */
 	public $nonce = 'hptal_nonce';
 
+	/**
+	 * ID of the HTML element
+	 * @var string
+	 */
+	public $metabox_id = 'post-type-archive-checklist';
+
 
 	/**
 	 * Instantiates the class
@@ -113,7 +119,9 @@ class HPTAL_MetaBox
 			 'hptal-ajax-script'
 			,'hptal_obj'
 			,array(
-				'nonce' => wp_create_nonce( $this->nonce )
+				 'ajaxurl'    => admin_url( 'admin-ajax.php' )
+				,'nonce'      => wp_create_nonce( $this->nonce )
+				,'metabox_id' => $this->metabox_id
 			 )
 		);
 	}
@@ -136,8 +144,8 @@ class HPTAL_MetaBox
 			,'object'
 		);
 
-		// #post-type-archive-checklist
-		$html = '<ul id="post-type-archive-checklist">';
+		// #{$metabox_id}
+		$html = "<ul id='{$metabox_id}'>";
 		foreach ( $post_types as $pt )
 		{
 			$html .= sprintf(
