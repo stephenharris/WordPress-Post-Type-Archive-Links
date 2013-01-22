@@ -2,9 +2,9 @@
 defined( 'ABSPATH' ) OR exit;
 /**
  * Plugin Name:  WordPress Post Type Archive Links
- * Version:	     1.1
+ * Version:      1.1
  * Description:  Adds a MetaBox to the Appearance > Menu page to add post type archive links
- * Author:	     Stephen Harris <contact@stephenharris.info>
+ * Author:       Stephen Harris <contact@stephenharris.info>
  * Author URI:   https://github.com/stephenharris/
  * Contributors: Franz Josef Kaiser <wecodemore@gmail.com>
  * License:      GPLv3
@@ -59,21 +59,36 @@ class HPTAL_MetaBox
 
 
 	/**
-	 * Constuctor
-	 * Adds all callbacks to the apropriate filters & hooks
+	 * Constructor.
 	 * @return \HPTAL_MetaBox
 	 */
 	public function __construct()
+	{
+		add_action( 'admin_head-nav-menus.php', array( $this, 'setup_admin_hooks' ) );
+
+		add_filter( 'wp_setup_nav_menu_item',  array( $this, 'setup_archive_item' ) );
+
+		add_filter( 'wp_nav_menu_objects', array( $this, 'maybe_make_current' ) );
+		add_action( 'admin_init', array( $this, 'add_meta_box' ) );
+
+		add_action( 'admin_enqueue_scripts', array( $this, 'metabox_script' ) );
+
+		add_action( "wp_ajax_{$this->nonce}", array( $this, 'ajax_add_post_type' ) );
+	}
+
+
+	/**
+	 * Adds all callbacks to the appropriate filters & hooks in the admin UI.
+	 * Only loads on the admin UI nav menu management page.
+	 * @return void
+	 */
+	public function setup_admin_hooks()
 	{
 		add_action( 'admin_init', array( $this, 'add_meta_box' ) );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'metabox_script' ) );
 
 		add_action( "wp_ajax_{$this->nonce}", array( $this, 'ajax_add_post_type' ) );
-
-		add_filter( 'wp_setup_nav_menu_item',  array( $this, 'setup_archive_item' ) );
-
-		add_filter( 'wp_nav_menu_objects', array( $this, 'maybe_make_current' ) );
 	}
 
 
