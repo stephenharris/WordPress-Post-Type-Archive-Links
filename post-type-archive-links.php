@@ -48,10 +48,16 @@ class Post_Type_Archive_Links {
 	public $nonce = 'hptal_nonce';
 
 	/**
-	 * ID of the HTML element
+	 * ID of the custom metabox
 	 * @var string
 	 */
-	public $metabox_id = 'post-type-archive-checklist';
+	public $metabox_id = 'hptal-metabox';
+
+	/**
+	 * ID of the custom post type list items
+	 * @var string
+	 */
+	public $metabox_list_id = 'post-type-archive-checklist';
 
 	/**
 	 * Instantiates the class
@@ -100,7 +106,7 @@ class Post_Type_Archive_Links {
 	 */
 	public function add_meta_box() {
 		add_meta_box(
-			'hptal-metabox',
+			$this->metabox_id,
 			__( 'Post Type Archives', 'hptal-textdomain' ),
 			array( $this, 'metabox' ),
 			'nav-menus',
@@ -137,6 +143,7 @@ class Post_Type_Archive_Links {
 				'ajaxurl'    => admin_url( 'admin-ajax.php' ),
 				'nonce'      => wp_create_nonce( $this->nonce ),
 				'metabox_id' => $this->metabox_id,
+				'metabox_list_id' => $this->metabox_list_id,
 				'action'     => $this->nonce
 			)
 		);
@@ -159,8 +166,7 @@ class Post_Type_Archive_Links {
 			'object'
 		);
 
-		// #{$metabox_id}
-		$html = '<ul id="'. $this->metabox_id .'">';
+		$html = '<ul id="'. $this->metabox_list_id .'">';
 		foreach ( $post_types as $pt ) {
 			$html .= sprintf(
 				'<li><label><input type="checkbox" value ="%s" />&nbsp;%s</label></li>',
