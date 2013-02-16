@@ -171,20 +171,8 @@ class Post_Type_Archive_Links {
 		$html .= '</ul>';
 
 		// 'Add to Menu' button
-		$args = array( 'id' => 'submit-post-type-archives' );
-		if ( empty( $nav_menu_selected_id ) ) {
-			$args['disabled'] = 'disabled';
-		}
-		$html .= sprintf( 
-			'<p class="button-controls"><span class="add-to-menu">%s</span></p>',
-			get_submit_button(
-				esc_attr__( 'Add to Menu' ),
-				'secondary',
-				esc_attr__( 'add-post-type-menu-item' ),
-				false,
-				$args
-			)
-		);
+		$html .= '<p class="button-controls"><span class="add-to-menu"><input type="submit"'. disabled( $nav_menu_selected_id, 0 ) .' class="button-secondary submit-add-to-menu right" value="'. esc_attr( 'Add to Menu' ) .'" name="add-post-type-menu-item" id="submit-post-type-archives" /><span class="spinner"></span></span></p>';
+		
 		print $html;
 	}
 
