@@ -99,7 +99,7 @@ class HPTAL_MetaBox
 	public function add_meta_box()
 	{
 		add_meta_box(
-			 'hptal-metabox'
+			 $this->metabox_id
 			,__( 'Post Types', 'hptal-textdomain' )
 			,array( $this, 'metabox' )
 			,'nav-menus'
@@ -148,7 +148,7 @@ class HPTAL_MetaBox
 	 */
 	public function metabox()
 	{
-		global $nav_menu_selected_id;
+		global $nav_menu_selected_id, $wp_meta_boxes;
 
 		// Get post types
 		$post_types = get_post_types(
@@ -158,9 +158,8 @@ class HPTAL_MetaBox
 			 )
 			,'object'
 		);
-
 		// #{$metabox_id}
-		$html = "<ul id='{$metabox_id}'>";
+		$html = "<ul id='{$this->metabox_id}'>";
 		foreach ( $post_types as $pt )
 		{
 			$html .= sprintf(
@@ -191,6 +190,7 @@ class HPTAL_MetaBox
 				 )
 			 )
 		);
+
 		print $html;
 	}
 
