@@ -14,7 +14,10 @@ jQuery( document ).ready( function($) {
 		} );
 		
 		// Show spinner
-		$( '#' + hptal_obj.metabox_id ).find('.spinner').show();
+		$( '#' + hptal_obj.metabox_id ).find( '.spinner' ).show();
+		
+		// Disable button
+		$( 'submit#submit-post-type-archives' ).prop( 'disabled', true );
 
 		// Send checked post types with our action, and nonce
 		$.post( hptal_obj.ajaxurl, {
@@ -27,8 +30,9 @@ jQuery( document ).ready( function($) {
 			// AJAX returns html to add to the menu, hide spinner, remove checks
 			function( response ) {
 				$( '#menu-to-edit' ).append( response );
-				$( '#' + hptal_obj.metabox_id ).find('.spinner').hide();
-				$hptal_list_items.prop("checked", false);
+				$( '#' + hptal_obj.metabox_id ).find( '.spinner' ).hide();
+				$hptal_list_items.prop( 'checked', false );
+				$( 'submit#submit-post-type-archives' ).prop( 'disabled', false );
 			}
 		);
 	} );
