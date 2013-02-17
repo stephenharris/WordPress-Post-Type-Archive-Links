@@ -1,36 +1,43 @@
 <?php
 defined( 'ABSPATH' ) OR exit;
-/**
- * Plugin Name:  WordPress Post Type Archive Links
- * Version:      1.1
- * Description:  Adds a MetaBox to the Appearance > Menu page to add post type archive links
- * Author:       Stephen Harris <contact@stephenharris.info>
- * Author URI:   https://github.com/stephenharris/
- * Contributors: Franz Josef Kaiser <wecodemore@gmail.com>
- * License:      GPLv3
- * License URI:  http://www.gnu.org/licenses/gpl.txt
+/*
+Plugin Name:  WordPress Post Type Archive Links
+Plugin URI:   https://github.com/stephenharris/WordPress-Post-Type-Archive-Links
+Description:  Adds a MetaBox to the Appearance > Menu page to add post type archive links
+Version:      1.1
+Author:       Stephen Harris
+Author URI:   https://github.com/stephenharris/
+Author Email: contact@stephenharris.info
+Contributors: Franz Josef Kaiser <wecodemore@gmail.com>, Ryan Urban <ryan@fringewebdevelopment.com>
+License:      GPLv3
+License URI:  http://www.gnu.org/licenses/gpl.txt
+ 
+	Copyright 2013 Stephen Harris (contact@stephenharris.info)
+
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License, version 2, as 
+	published by the Free Software Foundation.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+	
  */
 
 // Load at the default priority of 10
-add_action( 'plugins_loaded', array( 'HPTAL_MetaBox', 'init' ) );
-/**
- * HPTAL_MetaBox
- * Adds a MetaBox to the Appearance > Menu page to add post type archive links
- * @category   Administration User Interface
- * @package    WordPress
- * @author     Stephen Harris <contact@stephenharris.info>
- * @author     Franz Josef Kaiser <wecodemore@gmail.com>
- * @copyright  2012-2013 Stephen Harris
- * @license    http://www.gnu.org/licenses/gpl.txt GPLv3
- * @link       https://github.com/stephenharris/WordPress-Post-Type-Archive-Links
- */
-class HPTAL_MetaBox
-{
+add_action( 'plugins_loaded', array( 'Post_Type_Archive_Links', 'init' ) );
+
+class Post_Type_Archive_Links {
 	/**
 	 * Instance of the class
 	 * @static
 	 * @access protected
-	 * @var    object
+	 * @var object
 	 */
 	protected static $instance;
 
@@ -41,11 +48,16 @@ class HPTAL_MetaBox
 	public $nonce = 'hptal_nonce';
 
 	/**
-	 * ID of the HTML element
+	 * ID of the custom metabox
 	 * @var string
 	 */
-	public $metabox_id = 'post-type-archive-checklist';
+	public $metabox_id = 'hptal-metabox';
 
+	/**
+	 * ID of the custom post type list items
+	 * @var string
+	 */
+	public $metabox_list_id = 'post-type-archive-checklist';
 
 	/**
 	 * Instantiates the class
@@ -60,20 +72,21 @@ class HPTAL_MetaBox
 
 	/**
 	 * Constructor.
-	 * @return \HPTAL_MetaBox
+	 * @return \Post_Type_Archive_Links
 	 */
-	public function __construct()
-	{
+	public function __construct() {
+		add_action( 'admin_init', array( $this, 'add_meta_box' ) );
+		
 		add_action( 'admin_head-nav-menus.php', array( $this, 'setup_admin_hooks' ) );
 
 		add_filter( 'wp_setup_nav_menu_item',  array( $this, 'setup_archive_item' ) );
 
 		add_filter( 'wp_nav_menu_objects', array( $this, 'maybe_make_current' ) );
-		add_action( 'admin_init', array( $this, 'add_meta_box' ) );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'metabox_script' ) );
+		
+		add_action( "wp_ajax_" . $this->nonce, array( $this, 'ajax_add_post_type' ) );
 
-		add_action( "wp_ajax_{$this->nonce}", array( $this, 'ajax_add_post_type' ) );
 	}
 
 
@@ -82,13 +95,9 @@ class HPTAL_MetaBox
 	 * Only loads on the admin UI nav menu management page.
 	 * @return void
 	 */
-	public function setup_admin_hooks()
-	{
-		add_action( 'admin_init', array( $this, 'add_meta_box' ) );
-
+	public function setup_admin_hooks() {
+		
 		add_action( 'admin_enqueue_scripts', array( $this, 'metabox_script' ) );
-
-		add_action( "wp_ajax_{$this->nonce}", array( $this, 'ajax_add_post_type' ) );
 	}
 
 
@@ -96,15 +105,14 @@ class HPTAL_MetaBox
 	 * Adds the meta box to the menu page
 	 * @return void
 	 */
-	public function add_meta_box()
-	{
+	public function add_meta_box() {
 		add_meta_box(
-			 $this->metabox_id
-			,__( 'Post Types', 'hptal-textdomain' )
-			,array( $this, 'metabox' )
-			,'nav-menus'
-			,'side'
-			,'low'
+			$this->metabox_id,
+			__( 'Post Type Archives', 'hptal-textdomain' ),
+			array( $this, 'metabox' ),
+			'nav-menus',
+			'side',
+			'low'
 		);
 	}
 
@@ -115,29 +123,30 @@ class HPTAL_MetaBox
 	 * @param  string $hook Page Name
 	 * @return void
 	 */
-	public function metabox_script( $hook )
-	{
+	public function metabox_script( $hook ) {
 		if ( 'nav-menus.php' !== $hook )
 			return;
 
 		wp_register_script(
-			 'hptal-ajax-script'
-			,plugins_url( 'metabox.js', __FILE__ )
-			,array( 'jquery' )
-			,filemtime( plugin_dir_path( __FILE__ ).'metabox.js' )
-			,true
+			'hptal-ajax-script',
+			plugins_url( 'metabox.js', __FILE__ ),
+			array( 'jquery' ),
+			filemtime( plugin_dir_path( __FILE__ ).'metabox.js' ),
+			true
 		);
 		wp_enqueue_script( 'hptal-ajax-script' );
 
 		// Add nonce variable
 		wp_localize_script(
-			 'hptal-ajax-script'
-			,'hptal_obj'
-			,array(
-				 'ajaxurl'    => admin_url( 'admin-ajax.php' )
-				,'nonce'      => wp_create_nonce( $this->nonce )
-				,'metabox_id' => $this->metabox_id
-			 )
+			'hptal-ajax-script',
+			'hptal_obj',
+			array(
+				'ajaxurl'    => admin_url( 'admin-ajax.php' ),
+				'nonce'      => wp_create_nonce( $this->nonce ),
+				'metabox_id' => $this->metabox_id,
+				'metabox_list_id' => $this->metabox_list_id,
+				'action'     => $this->nonce
+			)
 		);
 	}
 
@@ -146,54 +155,36 @@ class HPTAL_MetaBox
 	 * MetaBox Content Callback
 	 * @return string $html
 	 */
-	public function metabox()
-	{
-		global $nav_menu_selected_id, $wp_meta_boxes;
+	public function metabox() {
+		global $nav_menu_selected_id;
 
 		// Get post types
 		$post_types = get_post_types(
-			 array(
-				 'public'   => true
-				,'_builtin' => false
-			 )
-			,'object'
+			array(
+				'public'   => true,
+				'_builtin' => false
+			),
+			'object'
 		);
-		// #{$metabox_id}
-		$html = "<ul id='{$this->metabox_id}'>";
-		foreach ( $post_types as $pt )
-		{
+
+		$html = '<ul id="'. $this->metabox_list_id .'">';
+		foreach ( $post_types as $pt ) {
 			$html .= sprintf(
-				 '<li><label><input type="checkbox" value ="%s" />&nbsp;%s</label></li>'
-				,esc_attr( $pt->name )
-				,esc_attr( $pt->labels->name )
+				'<li><label><input type="checkbox" value ="%s" />&nbsp;%s</label></li>',
+				esc_attr( $pt->name ),
+				esc_attr( $pt->labels->name )
 			);
 		}
 		$html .= '</ul>';
 
-		$html .= sprintf(
-			 '<img class="waiting" src="%s" alt="Loading">'
-			,admin_url( '/images/wpspin_light.gif' )
-		);
-
 		// 'Add to Menu' button
-		$html .= sprintf(
-			 '<p class="button-controls"><span class="add-to-menu">%s</span></p>'
-			,get_submit_button(
-				 esc_attr__( 'Add to Menu' )
-				,'button-secondary submit-add-to-menu'
-				,'add-post-type-menu-item'
-				,false
-				,array(
-					# 'id'       => 'submit-post-type-archives'
-					#,'onClick'  => 'return false;'
-					#,'disabled' => disabled( $nav_menu_selected_id, 0, false )
-				 )
-			 )
-		);
-
+		$html .= '<p class="button-controls"><span class="add-to-menu">';
+		$html .= '<input type="submit"'. disabled( $nav_menu_selected_id, 0 ) .' class="button-secondary submit-add-to-menu right" value="'. esc_attr( 'Add to Menu' ) .'" name="add-post-type-menu-item" id="submit-post-type-archives" />';
+		$html .= '<span class="spinner"></span>';
+		$html .= '</span></p>';
+		
 		print $html;
 	}
-
 
 	/**
 	 * AJAX Callback to create the menu item and add it to menu
@@ -227,11 +218,9 @@ class HPTAL_MetaBox
 		is_wp_error( $item_ids ) AND die( '-1' );
 
 		// Set up menu items
-		foreach ( (array) $item_ids as $menu_item_id )
-		{
+		foreach ( (array) $item_ids as $menu_item_id ) {
 			$menu_obj = get_post( $menu_item_id );
-			if ( ! empty( $menu_obj->ID ) )
-			{
+			if ( ! empty( $menu_obj->ID ) ) {
 				$menu_obj = wp_setup_nav_menu_item( $menu_obj );
 				// don't show "(pending)" in ajax-added items
 				$menu_obj->label = $menu_obj->title;
@@ -244,25 +233,25 @@ class HPTAL_MetaBox
 		require_once ABSPATH.'wp-admin/includes/nav-menu.php';
 
 		// This gets the HTML to returns it to the menu
-		if ( ! empty( $menu_items ) )
-		{
+		if ( ! empty( $menu_items ) ) {
 			$args = array(
-				 'after'       => ''
-				,'before'      => ''
-				,'link_after'  => ''
-				,'link_before' => ''
-				,'walker'      => new Walker_Nav_Menu_Edit
+				'after'       => '',
+				'before'      => '',
+				'link_after'  => '',
+				'link_before' => '',
+				'walker'      => new Walker_Nav_Menu_Edit
 			);
 
 			echo walk_nav_menu_tree(
-				 $menu_items
-				,0
-				,(object) $args
+				$menu_items,
+				0,
+				(object) $args
 			);
 		}
 
 		// Finally don't forget to exit
 		exit;
+
 	}
 
 
@@ -270,13 +259,12 @@ class HPTAL_MetaBox
 	 * Is the AJAX request allowed and should be processed?
 	 * @return void
 	 */
-	public function is_allowed()
-	{
+	public function is_allowed() {
 		// Capability Check
 		! current_user_can( 'edit_theme_options' ) AND die( '-1' );
 
 		// Nonce check
-		check_ajax_referer( $this->nonce, 'hptal_nonce_query_arg' );
+		check_ajax_referer( $this->nonce, 'nonce' );
 
 		// Is a post type chosen?
 		empty( $_POST['post_types'] ) AND exit;
@@ -288,8 +276,7 @@ class HPTAL_MetaBox
 	 * @param  object $menu_item
 	 * @return object $menu_item
 	 */
-	public function setup_archive_item( $menu_item )
-	{
+	public function setup_archive_item( $menu_item ) {
 		if ( $menu_item->type !== 'post_type_archive' )
 			return $menu_item;
 
@@ -302,14 +289,12 @@ class HPTAL_MetaBox
 
 	/**
 	 * Make post type archive link 'current'
-	 * @uses   HPTAL_MetaBox :: get_item_ancestors()
+	 * @uses   Post_Type_Archive_Links :: get_item_ancestors()
 	 * @param  array $items
 	 * @return array $items
 	 */
-	public function maybe_make_current( $items )
-	{
-		foreach ( $items as $item )
-		{
+	public function maybe_make_current( $items ) {
+		foreach ( $items as $item ) {
 			if ( 'post_type_archive' !== $item->type )
 				continue;
 
@@ -326,20 +311,17 @@ class HPTAL_MetaBox
 
 			// Loop through ancestors and give them 'parent' or 'ancestor' class
 			$active_anc_item_ids = $this->get_item_ancestors( $item );
-			foreach ( $items as $key => $parent_item )
-			{
+			foreach ( $items as $key => $parent_item ) {
 				$classes = (array) $parent_item->classes;
 
 				// If menu item is the parent
-				if ( $parent_item->db_id == $item->menu_item_parent )
-				{
+				if ( $parent_item->db_id == $item->menu_item_parent ) {
 					$classes[] = 'current-menu-parent';
 					$items[ $key ]->current_item_parent = true;
 				}
 
 				// If menu item is an ancestor
-				if ( in_array( intval( $parent_item->db_id ), $active_anc_item_ids ) )
-				{
+				if ( in_array( intval( $parent_item->db_id ), $active_anc_item_ids ) ) {
 					$classes[] = 'current-menu-ancestor';
 					$items[ $key ]->current_item_ancestor = true;
 				}
@@ -357,8 +339,7 @@ class HPTAL_MetaBox
 	 * @param  object $item
 	 * @return array  $active_anc_item_ids
 	 */
-	public function get_item_ancestors( $item )
-	{
+	public function get_item_ancestors( $item ) {
 		$anc_id = absint( $item->db_id );
 
 		$active_anc_item_ids = array();

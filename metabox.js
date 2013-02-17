@@ -1,23 +1,34 @@
+/**
+ * Handle the custom post type nav menu meta box
+ */
 jQuery( document ).ready( function($) {
-	$( '#submit-post-type-archives' ).click( function( event ) {
+     $( '#submit-post-type-archives' ).click( function( event ) {
 		event.preventDefault();
+		
+		var $hptal_list_items = $( '#' + hptal_obj.metabox_list_id + ' li :checked' );
 
-		/* Get checked boxes */
+		// Get checked boxes
 		var postTypes = [];
-		$( '#' + hptal_obj.metabox_id + ' li :checked' ).each( function() {
+		$hptal_list_items.each( function() {
 			postTypes.push( $( this ).val() );
 		} );
+		
+		// Show spinner
+		$( '#' + hptal_obj.metabox_id ).find('.spinner').show();
 
-		/* Send checked post types with our action, and nonce */
+		// Send checked post types with our action, and nonce
 		$.post( hptal_obj.ajaxurl, {
-				action: hptal_obj.nonce,
+				action: hptal_obj.action,
 				posttypearchive_nonce: hptal_obj.nonce,
-				post_types: postTypes
+				post_types: postTypes,
+				nonce: hptal_obj.nonce
 			},
 
-			/* AJAX returns html to add to the menu */
+			// AJAX returns html to add to the menu, hide spinner, remove checks
 			function( response ) {
 				$( '#menu-to-edit' ).append( response );
+				$( '#' + hptal_obj.metabox_id ).find('.spinner').hide();
+				$hptal_list_items.prop("checked", false);
 			}
 		);
 	} );
