@@ -63,8 +63,7 @@ class Post_Type_Archive_Links {
 	 * Instantiates the class
 	 * @return object $instance
 	 */
-	public static function init()
-	{
+	public static function init() {
 		is_null( self :: $instance ) AND self :: $instance = new self;
 		return self :: $instance;
 	}
@@ -86,7 +85,6 @@ class Post_Type_Archive_Links {
 		add_action( 'admin_enqueue_scripts', array( $this, 'metabox_script' ) );
 		
 		add_action( "wp_ajax_" . $this->nonce, array( $this, 'ajax_add_post_type' ) );
-
 	}
 
 
@@ -96,7 +94,6 @@ class Post_Type_Archive_Links {
 	 * @return void
 	 */
 	public function setup_admin_hooks() {
-		
 		add_action( 'admin_enqueue_scripts', array( $this, 'metabox_script' ) );
 	}
 
@@ -190,14 +187,12 @@ class Post_Type_Archive_Links {
 	 * AJAX Callback to create the menu item and add it to menu
 	 * @return string $HTML built with walk_nav_menu_tree()
 	 */
-	public function ajax_add_post_type()
-	{
+	public function ajax_add_post_type() {
 		$this->is_allowed();
 
 		// Create menu items and store IDs in array
 		$item_ids = array();
-		foreach ( array_values( $_POST['post_types'] ) as $post_type )
-		{
+		foreach ( array_values( $_POST['post_types'] ) as $post_type ) {
 			$post_type_obj = get_post_type_object( $post_type );
 
 			if( ! $post_type_obj )
