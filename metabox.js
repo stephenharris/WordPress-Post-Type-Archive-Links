@@ -6,6 +6,7 @@ jQuery( document ).ready( function($) {
 		event.preventDefault();
 		
 		var $hptal_list_items = $( '#' + hptal_obj.metabox_list_id + ' li :checked' );
+		var $hptal_submit = $( 'input#submit-post-type-archives' );
 
 		// Get checked boxes
 		var postTypes = [];
@@ -15,6 +16,9 @@ jQuery( document ).ready( function($) {
 		
 		// Show spinner
 		$( '#' + hptal_obj.metabox_id ).find('.spinner').show();
+		
+		// Disable button
+		$hptal_submit.prop( 'disabled', true );
 
 		// Send checked post types with our action, and nonce
 		$.post( hptal_obj.ajaxurl, {
@@ -29,6 +33,7 @@ jQuery( document ).ready( function($) {
 				$( '#menu-to-edit' ).append( response );
 				$( '#' + hptal_obj.metabox_id ).find('.spinner').hide();
 				$hptal_list_items.prop("checked", false);
+				$hptal_submit.prop( 'disabled', false );
 			}
 		);
 	} );
