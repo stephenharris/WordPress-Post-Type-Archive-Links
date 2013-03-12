@@ -159,13 +159,36 @@ class Post_Type_Archive_Links {
 		global $nav_menu_selected_id;
 
 		// Get post types
-		$post_types = get_post_types(
+		// Get custom visible custom post types
+		$custom_post_types = get_post_types(
 			array(
-				'public'   => true,
-				'_builtin' => false
+				'public'=>true,
+				'_builtin'=>false
 			),
 			'object'
 		);
+		// Get hidden custom post types 
+		$custom_hidden_post_types = get_post_types(
+			array(
+				'public'=>false,
+				'_builtin'=>false
+			),
+			'object'
+		);
+		// Get builtin post types
+		$builtin_post_types = get_post_types(
+			array(
+				'public'=>true,
+				'_builtin'=>true
+			),
+			'object'
+		);
+		// Merge all of the above in to one Object
+		$post_types = (object) array_merge(
+			(array) $custom_post_types, 
+			(array) $custom_hidden_post_types, 
+			(array) $builtin_post_types
+			);
 
 		$html = '<ul id="'. $this->metabox_list_id .'">';
 		foreach ( $post_types as $pt ) {
