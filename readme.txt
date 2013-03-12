@@ -13,7 +13,7 @@ Creates a metabox to the Appearance > Menu page to add custom post type archive 
 
 Post Type Archive Link creates a metabox on the Appearance > Menu admin page. This lists your custom post types and allows you to add links to each archive page in your WordPress menus.
 
-The great thing about this plugin is it integrates fully with the WordPress menus functionality, and so you will notice that your custom post type archive links that are added to your menus take advantage of the typical menu classes aded by WordPress, including the current page class.
+The great thing about this plugin is it integrates fully with the WordPress menus functionality, and so you will notice that your custom post type archive links that are added to your menus take advantage of the typical menu classes added by WordPress, including the current page class.
 
 
 == Installation ==
