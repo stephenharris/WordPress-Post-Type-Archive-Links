@@ -11,6 +11,8 @@ Author Email: contact@stephenharris.info
 Contributors: Franz Josef Kaiser <wecodemore@gmail.com>, Ryan Urban <ryan@fringewebdevelopment.com>
 License:      GPLv3
 License URI:  http://www.gnu.org/licenses/gpl.txt
+Text Domain:  hptal-textdomain
+Domain Path:  /lang/
  
 	Copyright 2013 Stephen Harris (contact@stephenharris.info)
 
@@ -75,6 +77,8 @@ class Post_Type_Archive_Links {
 	 * @return \Post_Type_Archive_Links
 	 */
 	public function __construct() {
+		load_plugin_textdomain( 'hptal-textdomain' , false , dirname( plugin_basename( __FILE__ ) ) . '/lang/' );
+		
 		add_action( 'admin_init', array( $this, 'add_meta_box' ) );
 		
 		add_action( 'admin_head-nav-menus.php', array( $this, 'setup_admin_hooks' ) );
