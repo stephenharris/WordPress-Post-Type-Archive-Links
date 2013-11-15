@@ -1,0 +1,63 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WordPress Post Type Archive Links v1.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2013-09-19 12:31:49+0000\n"
+"Last-Translator: admin <joern@flyingletters.com>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: CSL v1.x\n"
+"X-Poedit-Language: German\n"
+"X-Poedit-Country: GERMANY\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-KeywordsList: __;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;_n_noop:1,2;_c,_nc:4c,1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2;\n"
+"X-Poedit-Basepath: ../\n"
+"X-Poedit-Bookmarks: \n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Textdomain-Support: yes"
+
+#. translators: plugin header field 'Name'
+#: post-type-archive-links.php:0
+#@ hptal-textdomain
+msgid "WordPress Post Type Archive Links"
+msgstr "WordPress Post-Type-Archiv Links"
+
+#. translators: plugin header field 'PluginURI'
+#: post-type-archive-links.php:0
+#@ hptal-textdomain
+msgid "https://github.com/stephenharris/WordPress-Post-Type-Archive-Links"
+msgstr ""
+
+#. translators: plugin header field 'Description'
+#: post-type-archive-links.php:0
+#@ hptal-textdomain
+msgid "Adds a MetaBox to the Appearance > Menu page to add post type archive links"
+msgstr "Fügt in eine Auswahl unter Design > Menüs hinzu, mit der Sie Post-Type-Archiv-Links hinzufügen können."
+
+#. translators: plugin header field 'Author'
+#: post-type-archive-links.php:0
+#@ hptal-textdomain
+msgid "Stephen Harris"
+msgstr ""
+
+#. translators: plugin header field 'AuthorURI'
+#: post-type-archive-links.php:0
+#@ hptal-textdomain
+msgid "https://github.com/stephenharris/"
+msgstr ""
+
+#. translators: plugin header field 'Version'
+#: post-type-archive-links.php:0
+#@ hptal-textdomain
+msgid "1.1"
+msgstr ""
+
+#: post-type-archive-links.php:115
+#@ hptal-textdomain
+msgid "Post Type Archives"
+msgstr "Post-Type Archive"
+
