@@ -4,7 +4,7 @@ defined( 'ABSPATH' ) OR exit;
 Plugin Name:  WordPress Post Type Archive Links
 Plugin URI:   https://github.com/stephenharris/WordPress-Post-Type-Archive-Links
 Description:  Adds a MetaBox to the Appearance > Menu page to add post type archive links
-Version:      1.1
+Version:      1.2
 Author:       Stephen Harris
 Author URI:   https://github.com/stephenharris/
 Author Email: contact@stephenharris.info
