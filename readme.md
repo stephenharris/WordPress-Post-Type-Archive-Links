@@ -50,6 +50,7 @@ The metabox will only list public custom post types
 ### 1.2 ###
 * Use has_archive rather tha public. [See #13](https://github.com/stephenharris/WordPress-Post-Type-Archive-Links/issues/13)
 * Tested up to 3.7.1
+* Added German language. Thanks to [@mcguffin](https://github.com/mcguffin).
 
 ### 1.1 ###
 * Fixed a couple of notices that displayed with debug on
