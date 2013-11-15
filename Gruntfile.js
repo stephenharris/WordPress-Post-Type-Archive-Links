@@ -90,7 +90,7 @@ grunt.registerTask( 'readme', [ 'wp_readme_to_markdown' ] );
   
 grunt.registerTask( 'build', [ 'clean', 'copy' ] );
 
-grunt.registerTask( 'deploy', [ 'checkbranch:master', 'checkrepo:deploy', 'build', 'compress', 'wp_deploy'] ); //Deploy via svn
+grunt.registerTask( 'deploy', [ 'checkbranch:master', 'checkrepo:deploy', 'build', 'wp_deploy'] ); //Deploy via svn
 
 //TODO on pre-commit: test/uglify?
 };
