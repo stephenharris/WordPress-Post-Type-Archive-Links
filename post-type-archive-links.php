@@ -165,7 +165,6 @@ class Post_Type_Archive_Links {
 		// Get post types
 		$post_types = get_post_types(
 			array(
-				'public'   => true,
 				'has_archive'	=> true,
 				'_builtin' => false
 			),
