@@ -1,189 +1,385 @@
 <?php
+defined( 'ABSPATH' ) OR exit;
 /*
-Plugin Name: Post Type Archive Links
-Version: 1.0.1
-Description: Adds a metabox to the Appearance > Menu page to add post type archive links
-Author: Stephen Harris
-Author URI: http://profiles.wordpress.org/users/stephenh1988/
-*/
+Plugin Name:  WordPress Post Type Archive Links
+Plugin URI:   https://github.com/stephenharris/WordPress-Post-Type-Archive-Links
+Description:  Adds a MetaBox to the Appearance > Menu page to add post type archive links
+Version:      1.2
+Author:       Stephen Harris
+Author URI:   https://github.com/stephenharris/
+Author Email: contact@stephenharris.info
+Contributors: Franz Josef Kaiser <wecodemore@gmail.com>, Ryan Urban <ryan@fringewebdevelopment.com>
+License:      GPLv3
+License URI:  http://www.gnu.org/licenses/gpl.txt
+Text Domain:  hptal-textdomain
+Domain Path:  /lang/
+ 
+	Copyright 2013 Stephen Harris (contact@stephenharris.info)
 
-class Harris_Post_Type_Archive_Link{
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License, version 2, as 
+	published by the Free Software Foundation.
 
-     //Everything will go here
-     public function load(){
-          //Hook function to add the metabox to the Menu page
-          add_action( 'admin_init', array(__CLASS__,'add_meta_box'));
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-          // Javascript for the meta box
-          add_action( 'admin_enqueue_scripts', array(__CLASS__,'metabox_script') );
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+	
+ */
 
-          //Ajax callback to create menu item and add it to menu
-          add_action('wp_ajax_my-add-post-type-archive-links', array( __CLASS__, 'ajax_add_post_type'));
+// Load at the default priority of 10
+add_action( 'plugins_loaded', array( 'Post_Type_Archive_Links', 'init' ) );
 
-          //Assign menu item the appropriate url
-          add_filter( 'wp_setup_nav_menu_item',  array(__CLASS__,'setup_archive_item') );
+class Post_Type_Archive_Links {
+    /**
+     * Instance of the class
+     * @static
+     * @access protected
+     * @var object
+     */
+    protected static $instance;
 
-          //Make post type archive link 'current'
-          add_filter( 'wp_nav_menu_objects', array(__CLASS__,'maybe_make_current'));
-     }
+    /**
+     * Nonce Value
+     * @var string
+     */
+    public $nonce = 'hptal_nonce';
 
-     public function add_meta_box() {
-          add_meta_box( 'post-type-archives', __('Post Types','my-post-type-archive-links'),array(__CLASS__,'metabox'),'nav-menus' ,'side','low');
-     }
+    /**
+     * ID of the custom metabox
+     * @var string
+     */
+    public $metabox_id = 'hptal-metabox';
 
-     public function metabox( ) {
-          global $nav_menu_selected_id;
+    /**
+     * ID of the custom post type list items
+     * @var string
+     */
+    public $metabox_list_id = 'post-type-archive-checklist';
 
-          //Get post types
-          $post_types = get_post_types(array('public'=>true,'_builtin'=>false), 'object');?>
-
-          <!-- Post type checkbox list -->
-          <ul id="post-type-archive-checklist">
-          <?php foreach ($post_types as $type):?>
-               <li><label><input type="checkbox" value ="<?php echo esc_attr($type->name); ?>" /> <?php echo esc_attr($type->labels->name); ?> </label></li>
-          <?php endforeach;?>
-          </ul><!-- /#post-type-archive-checklist -->
-
-          <!-- 'Add to Menu' button -->
-          <p class="button-controls" >
-               <span class="add-to-menu" >
-                    <input type="submit" id="submit-post-type-archives" <?php disabled( $nav_menu_selected_id, 0 ); ?> value="<?php esc_attr_e('Add to Menu'); ?>" name="add-post-type-menu-item"  class="button-secondary submit-add-to-menu" />
-               </span>
-          </p>
-     <?php
-     }
-
-     public function metabox_script($hook) {
-          if( 'nav-menus.php' != $hook )
-               return;
-
-          //On Appearance>Menu page, enqueue script: 
-          wp_enqueue_script( 'my-post-type-archive-links_metabox', plugins_url('/metabox.js', __FILE__),array('jquery'));
-
-          //Add nonce variable
-          wp_localize_script('my-post-type-archive-links_metabox','MyPostTypeArchiveLinks', array('nonce'=>wp_create_nonce('my-add-post-type-archive-links')));
-     }
-
-   public function ajax_add_post_type(){
-
-          if ( ! current_user_can( 'edit_theme_options' ) )
-               die('-1');
-
-          check_ajax_referer('my-add-post-type-archive-links','posttypearchive_nonce');
-
-          require_once ABSPATH . 'wp-admin/includes/nav-menu.php';
-          
-          if(empty($_POST['post_types']))
-               exit;
-
-          //Create menu items and store IDs in array
-          $item_ids=array();
-          foreach ( (array) $_POST['post_types'] as $post_type) {
-               $post_type_obj = get_post_type_object($post_type);
-
-		if(!$post_type_obj)
-			continue;
-
-               $menu_item_data= array(
-			'menu-item-title' => esc_attr($post_type_obj->labels->name),
-			'menu-item-type' => 'post_type_archive',
-			'menu-item-object' => esc_attr($post_type),
-			'menu-item-url' => get_post_type_archive_link($post_type),
-		);
-
-		//Collect the items' IDs. 
-		$item_ids[] = wp_update_nav_menu_item(0, 0, $menu_item_data );
-          }
-
-          //If there was an error die here
-          if ( is_wp_error( $item_ids ) )
-               die('-1');
-
-          //Set up menu items
-          foreach ( (array) $item_ids as $menu_item_id ) {
-               $menu_obj = get_post( $menu_item_id );
-               if ( ! empty( $menu_obj->ID ) ) {
-                    $menu_obj = wp_setup_nav_menu_item( $menu_obj );
-                    $menu_obj->label = $menu_obj->title; // don't show "(pending)" in ajax-added items
-                    $menu_items[] = $menu_obj;
-               }
-          }
-
-          //This gets the HTML to returns it to the menu
-          if ( ! empty( $menu_items ) ) {
-               $args = array(
-                    'after' => '',
-                    'before' => '',
-                    'link_after' => '',
-                    'link_before' => '',
-                    'walker' => new Walker_Nav_Menu_Edit,
-               );
-               echo walk_nav_menu_tree( $menu_items, 0, (object) $args );
-          }
-
-          //Finally don't forget to exit
-          exit;
-     }
+    /**
+     * Instantiates the class
+     * @return object $instance
+     */
+    public static function init()
+    {
+        is_null( self :: $instance ) AND self :: $instance = new self;
+        return self :: $instance;
+    }
 
 
-     public function setup_archive_item($menu_item){
-          if($menu_item->type !='post_type_archive')
-               return $menu_item;
+    /**
+     * Constructor.
+     * @return \Post_Type_Archive_Links
+     */
+    public function __construct() {
+        load_plugin_textdomain( 'hptal-textdomain' , false , dirname( plugin_basename( __FILE__ ) ) . '/lang/' );
 
-          $post_type = $menu_item->object;
-          $menu_item->url =get_post_type_archive_link($post_type);
+        add_action( 'admin_init', array( $this, 'add_meta_box' ) );
 
-          return $menu_item;
-     }
+        add_action( 'admin_head-nav-menus.php', array( $this, 'setup_admin_hooks' ) );
 
-     public function maybe_make_current($items){
-          foreach ($items as $item){
-               if('post_type_archive' != $item->type)
-                    continue;
+        add_filter( 'wp_setup_nav_menu_item',  array( $this, 'setup_archive_item' ) );
 
-		$post_type = $item->object;
-		if(!is_post_type_archive($post_type)&& !is_singular($post_type))
-                    continue;
+        add_filter( 'wp_nav_menu_objects', array( $this, 'maybe_make_current' ) );
 
-		//Make item current
-		$item->current = true;
-		$item->classes[] = 'current-menu-item';
+        add_action( 'admin_enqueue_scripts', array( $this, 'metabox_script' ) );
 
-		//Get menu item's ancestors:
-		$_anc_id = (int) $item->db_id;
-		$active_ancestor_item_ids=array();
+        add_action( "wp_ajax_" . $this->nonce, array( $this, 'ajax_add_post_type' ) );
 
-		while(( $_anc_id = get_post_meta( $_anc_id, '_menu_item_menu_item_parent', true ) ) &&
-				! in_array( $_anc_id, $active_ancestor_item_ids )  )
-		{
-				$active_ancestor_item_ids[] = $_anc_id;
-		}
-
-		//Loop through ancestors and give them 'ancestor' or 'parent' class
-		foreach ($items as $key=>$parent_item){
-                    $classes = (array) $parent_item->classes;
-
-                    //If menu item is the parent
-                    if ($parent_item->db_id == $item->menu_item_parent ) {
-                         $classes[] = 'current-menu-parent';
-                         $items[$key]->current_item_parent = true;
-                    }
-
-                    //If menu item is an ancestor
-                    if ( in_array(  intval( $parent_item->db_id ), $active_ancestor_item_ids ) ) {
-                         $classes[] = 'current-menu-ancestor';
-                         $items[$key]->current_item_ancestor = true;
-                    }
-
-                    $items[$key]->classes = array_unique( $classes );
-		}
-
-          }
-     return $items;
-     }
+    }
 
 
+    /**
+     * Adds all callbacks to the appropriate filters & hooks in the admin UI.
+     * Only loads on the admin UI nav menu management page.
+     * @return void
+     */
+    public function setup_admin_hooks() {
 
+        add_action( 'admin_enqueue_scripts', array( $this, 'metabox_script' ) );
+    }
+
+
+    /**
+     * Adds the meta box to the menu page
+     * @return void
+     */
+    public function add_meta_box() {
+        add_meta_box(
+            $this->metabox_id,
+            __( 'Post Type Archives', 'hptal-textdomain' ),
+            array( $this, 'metabox' ),
+            'nav-menus',
+            'side',
+            'low'
+        );
+    }
+
+
+    /**
+     * Scripts for AJAX call
+     * Only loads on nav-menus.php
+     * @param  string $hook Page Name
+     * @return void
+     */
+    public function metabox_script( $hook ) {
+        if ( 'nav-menus.php' !== $hook )
+            return;
+
+        wp_register_script(
+            'hptal-ajax-script',
+            plugins_url( 'metabox.js', __FILE__ ),
+            array( 'jquery' ),
+            filemtime( plugin_dir_path( __FILE__ ).'metabox.js' ),
+            true
+        );
+        wp_enqueue_script( 'hptal-ajax-script' );
+
+        // Add nonce variable
+        wp_localize_script(
+            'hptal-ajax-script',
+            'hptal_obj',
+            array(
+                'ajaxurl'    => admin_url( 'admin-ajax.php' ),
+                'nonce'      => wp_create_nonce( $this->nonce ),
+                'metabox_id' => $this->metabox_id,
+                'metabox_list_id' => $this->metabox_list_id,
+                'action'     => $this->nonce
+            )
+        );
+    }
+
+
+    /**
+     * MetaBox Content Callback
+     * @return string $html
+     */
+    public function metabox() {
+        global $nav_menu_selected_id;
+
+        // Get post types
+        $post_types = get_post_types(
+            array(
+                'has_archive'	=> true,
+                '_builtin' => false
+            ),
+            'object'
+        );
+
+        $html = '<ul id="'. $this->metabox_list_id .'">';
+        foreach ( $post_types as $pt ) {
+            $html .= sprintf(
+                '<li><label><input type="checkbox" value ="%s" />&nbsp;%s</label></li>',
+                esc_attr( $pt->name ),
+                esc_attr( $pt->labels->name )
+            );
+        }
+        $html .= '</ul>';
+
+        // 'Add to Menu' button
+        $html .= '<p class="button-controls"><span class="add-to-menu">';
+        $html .= '<input type="submit"'. disabled( $nav_menu_selected_id, 0, false ) .' class="button-secondary
+			  submit-add-to-menu right" value="'. esc_attr( 'Add to Menu' ) .'" 
+			  name="add-post-type-menu-item" id="submit-post-type-archives" />';
+        $html .= '<span class="spinner"></span>';
+        $html .= '</span></p>';
+
+        print $html;
+    }
+
+    /**
+     * AJAX Callback to create the menu item and add it to menu
+     * @return string $HTML built with walk_nav_menu_tree()
+     */
+    public function ajax_add_post_type()
+    {
+        $this->is_allowed();
+
+        // Create menu items and store IDs in array
+        $item_ids = array();
+        foreach ( array_values( $_POST['post_types'] ) as $post_type )
+        {
+            $post_type_obj = get_post_type_object( $post_type );
+
+            if( ! $post_type_obj )
+                continue;
+
+            $menu_item_data= array(
+                'menu-item-title'  => esc_attr( $post_type_obj->labels->name )
+            ,'menu-item-type'   => 'post_type_archive'
+            ,'menu-item-object' => esc_attr( $post_type )
+            ,'menu-item-url'    => get_post_type_archive_link( $post_type )
+            );
+
+            // Collect the items' IDs.
+            $item_ids[] = wp_update_nav_menu_item( 0, 0, $menu_item_data );
+        }
+
+        // If there was an error die here
+        is_wp_error( $item_ids ) AND die( '-1' );
+
+        // Set up menu items
+        foreach ( (array) $item_ids as $menu_item_id ) {
+            $menu_obj = get_post( $menu_item_id );
+            if ( ! empty( $menu_obj->ID ) ) {
+                $menu_obj = wp_setup_nav_menu_item( $menu_obj );
+                // don't show "(pending)" in ajax-added items
+                $menu_obj->label = $menu_obj->title;
+
+                $menu_items[] = $menu_obj;
+            }
+        }
+
+        // Needed to get the Walker up and running
+        require_once ABSPATH.'wp-admin/includes/nav-menu.php';
+
+        // This gets the HTML to returns it to the menu
+        if ( ! empty( $menu_items ) ) {
+            $args = array(
+                'after'       => '',
+                'before'      => '',
+                'link_after'  => '',
+                'link_before' => '',
+                'walker'      => new Walker_Nav_Menu_Edit
+            );
+
+            echo walk_nav_menu_tree(
+                $menu_items,
+                0,
+                (object) $args
+            );
+        }
+
+        // Finally don't forget to exit
+        exit;
+
+    }
+
+
+    /**
+     * Is the AJAX request allowed and should be processed?
+     * @return void
+     */
+    public function is_allowed() {
+        // Capability Check
+        ! current_user_can( 'edit_theme_options' ) AND die( '-1' );
+
+        // Nonce check
+        check_ajax_referer( $this->nonce, 'nonce' );
+
+        // Is a post type chosen?
+        empty( $_POST['post_types'] ) AND exit;
+    }
+
+
+    /**
+     * Assign menu item the appropriate url
+     * @param  object $menu_item
+     * @return object $menu_item
+     */
+    public function setup_archive_item( $menu_item ) {
+        if ( $menu_item->type !== 'post_type_archive' )
+            return $menu_item;
+
+        $post_type = $menu_item->object;
+        $menu_item->url = get_post_type_archive_link( $post_type );
+
+        return $menu_item;
+    }
+
+    /**
+     * Check for taxonomy archive page of current post type
+     *
+     * Used to mark the current menu item
+     *
+     * @param $post_type
+     * @return bool
+     */
+    public function is_post_type_tax_archive( $post_type ) {
+
+        $post_type_taxonomies = get_object_taxonomies( $post_type );
+
+        foreach ( $post_type_taxonomies as $tax ) {
+
+            if ( is_tax( $tax ) ) {
+
+                return true;
+
+            }
+
+        }
+
+        return false;
+    }
+
+    /**
+     * Make post type archive link 'current'
+     * @uses   Post_Type_Archive_Links :: get_item_ancestors()
+     * @param  array $items
+     * @return array $items
+     */
+    public function maybe_make_current( $items ) {
+        foreach ( $items as $item ) {
+            if ( 'post_type_archive' !== $item->type )
+                continue;
+
+            $post_type = $item->object;
+            if (
+                ! is_post_type_archive( $post_type )
+                AND ! is_singular( $post_type )
+                AND ! $this->is_post_type_tax_archive( $post_type )
+            )
+                continue;
+
+            // Make item current
+            $item->current = true;
+            $item->classes[] = 'current-menu-item';
+
+            // Loop through ancestors and give them 'parent' or 'ancestor' class
+            $active_anc_item_ids = $this->get_item_ancestors( $item );
+            foreach ( $items as $key => $parent_item ) {
+                $classes = (array) $parent_item->classes;
+
+                // If menu item is the parent
+                if ( $parent_item->db_id == $item->menu_item_parent ) {
+                    $classes[] = 'current-menu-parent';
+                    $items[ $key ]->current_item_parent = true;
+                }
+
+                // If menu item is an ancestor
+                if ( in_array( intval( $parent_item->db_id ), $active_anc_item_ids ) ) {
+                    $classes[] = 'current-menu-ancestor';
+                    $items[ $key ]->current_item_ancestor = true;
+                }
+
+                $items[ $key ]->classes = array_unique( $classes );
+            }
+        }
+
+        return $items;
+    }
+
+
+    /**
+     * Get menu item's ancestors
+     * @param  object $item
+     * @return array  $active_anc_item_ids
+     */
+    public function get_item_ancestors( $item ) {
+        $anc_id = absint( $item->db_id );
+
+        $active_anc_item_ids = array();
+        while (
+            $anc_id = get_post_meta( $anc_id, '_menu_item_menu_item_parent', true )
+            AND ! in_array( $anc_id, $active_anc_item_ids )
+        )
+            $active_anc_item_ids[] = $anc_id;
+
+        return $active_anc_item_ids;
+    }
 }
-Harris_Post_Type_Archive_Link::load();
-?>
