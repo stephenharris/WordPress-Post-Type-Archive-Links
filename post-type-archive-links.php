@@ -112,7 +112,7 @@ class Post_Type_Archive_Links {
 	public function add_meta_box() {
 		add_meta_box(
 			$this->metabox_id,
-			__( 'Post Type Archives', 'hptal-textdomain' ),
+			__( 'Post Type Archives', 'hptal-textdomain'),
 			array( $this, 'metabox' ),
 			'nav-menus',
 			'side',
@@ -184,7 +184,7 @@ class Post_Type_Archive_Links {
 		// 'Add to Menu' button
 		$html .= '<p class="button-controls"><span class="add-to-menu">';
 		$html .= '<input type="submit"'. disabled( $nav_menu_selected_id, 0, false ) .' class="button-secondary
-			  submit-add-to-menu right" value="'. esc_attr( 'Add to Menu' ) .'" 
+			  submit-add-to-menu right" value="'. esc_attr( __('Add to Menu') ) .'" 
 			  name="add-post-type-menu-item" id="submit-post-type-archives" />';
 		$html .= '<span class="spinner"></span>';
 		$html .= '</span></p>';
