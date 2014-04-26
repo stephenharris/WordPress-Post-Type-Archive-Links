@@ -194,7 +194,9 @@ class Post_Type_Archive_Links {
 		);
 
 		$html = '<ul id="'. self::METABOXLISTID .'">';
-		foreach ( $post_types as $pt ) {
+		foreach ( $post_types as $ptid => $pt ) {
+			$to_show = $pt->show_in_nav_menus && $pt->publicly_queryable;
+			if ( ! apply_filters( "show_{$ptid}_archive_in_nav_menus", $to_show, $pt ) ) continue;
 			$html .= sprintf(
 				'<li><label><input type="checkbox" value ="%s" />&nbsp;%s</label></li>',
 				esc_attr( $pt->name ),
