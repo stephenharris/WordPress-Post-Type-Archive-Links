@@ -1,0 +1,42 @@
+{
+    "name": "stephenharris/post_type_archive_link",
+    "description": "WordPress plugin that creates a metabox to the Appearance > Menu page to add custom post type archive link.",
+    "keywords": ["wordpress"],
+    "type": "wordpress-plugin",
+    "homepage": "https://github.com/stephenharris/WordPress-Post-Type-Archive-Links",
+    "license": "GPL",
+    "authors": [
+        {
+            "name": "Stephen Harris",
+            "email": "contact@stephenharris.info",
+            "homepage": "http://stephenharris.info",
+            "role": "Lead Developer"
+        },
+        {
+            "name": "F J Kaiser",
+            "email": "wecodemore@gmail.com",
+            "role": "Developer"
+        },
+        {
+            "name": "Jörn Lund",
+            "role": "Developer"
+        },
+        {
+            "name": "Giuseppe Mazzapica",
+            "email": "giuseppe.mazzapica@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/Giuseppe-Mazzapica/WordPress-Post-Type-Archive-Links/issues"
+    },
+    "require": {
+        "composer/installers": "~1.0"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/Giuseppe-Mazzapica/WordPress-Post-Type-Archive-Links"
+        }
+    ]
+}
