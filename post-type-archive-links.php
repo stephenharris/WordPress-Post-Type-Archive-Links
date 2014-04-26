@@ -32,16 +32,15 @@ Domain Path:  /lang/
  */
 
 // Load at the default priority of 10
-add_action( 'plugins_loaded', array( 'Post_Type_Archive_Links', 'init' ) );
+add_action( 'plugins_loaded', array( new Post_Type_Archive_Links, 'init' ) );
 
 class Post_Type_Archive_Links {
 	/**
-	 * Instance of the class
-	 * @static
-	 * @access protected
-	 * @var object
+	 * True if class already inited
+	 * @access private
+	 * @var bool
 	 */
-	protected static $instance;
+	private $ininited;
 
 	/**
 	 * Nonce Value
@@ -62,21 +61,34 @@ class Post_Type_Archive_Links {
 	const METABOXLISTID = 'post-type-archive-checklist';
 
 	/**
-	 * Instantiates the class
-	 * @return object $instance
+	 * Instantiates the class, add hooks and load domain
+	 * @return \Post_Type_Archive_Links
+	 * @use \Post_Type_Archive_Links::enable() Add hooks, load domain
 	 */
-	public static function init() {
-		is_null( self :: $instance ) AND self :: $instance = new self;
-		return self :: $instance;
+	public function init() {
+		if ( ! $this->ininited ) {
+			$this->ininited = true;
+			$this->enable( dirname( plugin_basename( __FILE__ ) ) );
+			
+			/**
+			This filter allow to access to current class instance
+			by calling $hptal = apply_filters( 'post_type_archive_links', NULL );
+			No singleton was harmed in the making of this plugin.
+			*/
+			add_filter( 'post_type_archive_links', array( $this, __FUNCTION__ ) );
+		}
+		return $this;
 	}
 
 
 	/**
-	 * Constructor.
-	 * @return \Post_Type_Archive_Links
+	 * Add plugin hooks and load domain.
+	 * @return void
+	 * @access private
 	 */
-	public function __construct() {
-		load_plugin_textdomain( 'hptal-textdomain' , false , dirname( plugin_basename( __FILE__ ) ) . '/lang/' );
+	private function enable( $path ) {
+		
+		load_plugin_textdomain( 'hptal-textdomain' , false , $path . '/lang/' );
 		
 		add_action( 'admin_init', array( $this, 'add_meta_box' ) );
 		
@@ -89,6 +101,33 @@ class Post_Type_Archive_Links {
 		add_action( 'admin_enqueue_scripts', array( $this, 'metabox_script' ) );
 		
 		add_action( "wp_ajax_" . self::NONCE, array( $this, 'ajax_add_post_type' ) );
+
+	}
+	
+	/**
+	 * Remove plugin hooks and unset domain if exists.
+	 * @return void
+	 */
+	public function disable() {
+		if ( $this->ininited ) {
+			
+			if ( isset( $GLOBALS['l10n']['hptal-textdomain'] ) ) {
+				unset( $GLOBALS['l10n']['hptal-textdomain'] );
+			}
+		
+			remove_action( 'admin_init', array( $this, 'add_meta_box' ) );
+			
+			remove_action( 'admin_head-nav-menus.php', array( $this, 'setup_admin_hooks' ) );
+
+			remove_filter( 'wp_setup_nav_menu_item',  array( $this, 'setup_archive_item' ) );
+
+			remove_filter( 'wp_nav_menu_objects', array( $this, 'maybe_make_current' ) );
+
+			remove_action( 'admin_enqueue_scripts', array( $this, 'metabox_script' ) );
+		
+			remove_action( "wp_ajax_" . self::NONCE, array( $this, 'ajax_add_post_type' ) );
+		
+		}
 	}
 
 
