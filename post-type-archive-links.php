@@ -59,6 +59,14 @@ class Post_Type_Archive_Links {
 	 * @const \Post_Type_Archive_Links::METABOXLISTID
 	 */
 	const METABOXLISTID = 'post-type-archive-checklist';
+	
+	/**
+	 * CPT objects that plugin should handle: having true
+	 * 'has_archive', 'publicly_queryable' and 'show_in_nav_menu'
+	 * @var array
+	 * @access protected
+	 */
+	protected $cpts;
 
 	/**
 	 * Instantiates the class, add hooks and load domain
@@ -90,7 +98,9 @@ class Post_Type_Archive_Links {
 		
 		load_plugin_textdomain( 'hptal-textdomain' , false , $path . '/lang/' );
 		
-		add_action( 'admin_init', array( $this, 'add_meta_box' ) );
+		add_action( 'admin_init', array( $this, 'get_cpts' ) );
+		
+		add_action( 'admin_init', array( $this, 'add_meta_box' ), 20 );
 
 		add_filter( 'wp_setup_nav_menu_item',  array( $this, 'setup_archive_item' ) );
 
@@ -112,8 +122,10 @@ class Post_Type_Archive_Links {
 			if ( isset( $GLOBALS['l10n']['hptal-textdomain'] ) ) {
 				unset( $GLOBALS['l10n']['hptal-textdomain'] );
 			}
+			
+			remove_action( 'admin_init', array( $this, 'get_cpts' ) );
 		
-			remove_action( 'admin_init', array( $this, 'add_meta_box' ) );
+			remove_action( 'admin_init', array( $this, 'add_meta_box' ), 20 );
 
 			remove_filter( 'wp_setup_nav_menu_item',  array( $this, 'setup_archive_item' ) );
 
@@ -125,6 +137,31 @@ class Post_Type_Archive_Links {
 		
 		}
 	}
+	
+	/**
+	 * Get CPTs that plugin should handle: having true
+	 * 'has_archive', 'publicly_queryable' and 'show_in_nav_menu'
+	 * @return void
+	 */
+	public function get_cpts() {
+		$cpts = array();
+		$has_archive_cps = get_post_types(
+			array(
+				'has_archive'	=> true,
+				'_builtin' => false
+			),
+			'object'
+		);
+		foreach ( $has_archive_cps as $ptid => $pt ) {
+			$to_show = $pt->show_in_nav_menus && $pt->publicly_queryable;
+			if ( apply_filters( "show_{$ptid}_archive_in_nav_menus", $to_show, $pt ) ) {
+				$cpts[] = $pt;
+			}
+		}
+		if ( ! empty( $cpts ) ) {
+			$this->cpts = $cpts;
+		}
+	}
 
 
 	/**
@@ -132,6 +169,10 @@ class Post_Type_Archive_Links {
 	 * @return void
 	 */
 	public function add_meta_box() {
+		
+		// Do nothing if no CPTs to handle
+		if ( empty( $this->cpts ) ) return;
+		
 		add_meta_box(
 			self::METABOXID,
 			__( 'Post Type Archives', 'hptal-textdomain' ),
@@ -152,6 +193,9 @@ class Post_Type_Archive_Links {
 	public function metabox_script( $hook ) {
 		if ( 'nav-menus.php' !== $hook )
 			return;
+		
+		// Do nothing if no CPTs to handle
+		if ( empty( $this->cpts ) ) return;
 
 		wp_register_script(
 			'hptal-ajax-script',
@@ -182,21 +226,14 @@ class Post_Type_Archive_Links {
 	 * @return string $html
 	 */
 	public function metabox() {
+		
+		// Do nothing if no CPTs to handle	
+		if ( empty( $this->cpts ) ) return;
+		
 		global $nav_menu_selected_id;
 
-		// Get post types
-		$post_types = get_post_types(
-			array(
-				'has_archive'	=> true,
-				'_builtin' => false
-			),
-			'object'
-		);
-
 		$html = '<ul id="'. self::METABOXLISTID .'">';
-		foreach ( $post_types as $ptid => $pt ) {
-			$to_show = $pt->show_in_nav_menus && $pt->publicly_queryable;
-			if ( ! apply_filters( "show_{$ptid}_archive_in_nav_menus", $to_show, $pt ) ) continue;
+		foreach ( $this->cpts as $pt ) {
 			$html .= sprintf(
 				'<li><label><input type="checkbox" value ="%s" />&nbsp;%s</label></li>',
 				esc_attr( $pt->name ),
