@@ -45,21 +45,21 @@ class Post_Type_Archive_Links {
 
 	/**
 	 * Nonce Value
-	 * @var string
+	 * @const \Post_Type_Archive_Links::NONCE
 	 */
-	public $nonce = 'hptal_nonce';
+	const NONCE = 'hptal_nonce';
 
 	/**
 	 * ID of the custom metabox
-	 * @var string
+	 * @const \Post_Type_Archive_Links::METABOXID
 	 */
-	public $metabox_id = 'hptal-metabox';
+	const METABOXID = 'hptal-metabox';
 
 	/**
 	 * ID of the custom post type list items
-	 * @var string
+	 * @const \Post_Type_Archive_Links::METABOXLISTID
 	 */
-	public $metabox_list_id = 'post-type-archive-checklist';
+	const METABOXLISTID = 'post-type-archive-checklist';
 
 	/**
 	 * Instantiates the class
@@ -88,7 +88,7 @@ class Post_Type_Archive_Links {
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'metabox_script' ) );
 		
-		add_action( "wp_ajax_" . $this->nonce, array( $this, 'ajax_add_post_type' ) );
+		add_action( "wp_ajax_" . self::NONCE, array( $this, 'ajax_add_post_type' ) );
 	}
 
 
@@ -108,7 +108,7 @@ class Post_Type_Archive_Links {
 	 */
 	public function add_meta_box() {
 		add_meta_box(
-			$this->metabox_id,
+			self::METABOXID,
 			__( 'Post Type Archives', 'hptal-textdomain' ),
 			array( $this, 'metabox' ),
 			'nav-menus',
@@ -143,10 +143,10 @@ class Post_Type_Archive_Links {
 			'hptal_obj',
 			array(
 				'ajaxurl'    => admin_url( 'admin-ajax.php' ),
-				'nonce'      => wp_create_nonce( $this->nonce ),
-				'metabox_id' => $this->metabox_id,
-				'metabox_list_id' => $this->metabox_list_id,
-				'action'     => $this->nonce
+				'nonce'      => wp_create_nonce( self::NONCE ),
+				'metabox_id' => self::METABOXID,
+				'metabox_list_id' => self::METABOXLISTID,
+				'action'     => self::NONCE
 			)
 		);
 	}
@@ -168,7 +168,7 @@ class Post_Type_Archive_Links {
 			'object'
 		);
 
-		$html = '<ul id="'. $this->metabox_list_id .'">';
+		$html = '<ul id="'. self::METABOXLISTID .'">';
 		foreach ( $post_types as $pt ) {
 			$html .= sprintf(
 				'<li><label><input type="checkbox" value ="%s" />&nbsp;%s</label></li>',
@@ -265,7 +265,7 @@ class Post_Type_Archive_Links {
 		! current_user_can( 'edit_theme_options' ) AND die( '-1' );
 
 		// Nonce check
-		check_ajax_referer( $this->nonce, 'nonce' );
+		check_ajax_referer( self::NONCE, 'nonce' );
 
 		// Is a post type chosen?
 		empty( $_POST['post_types'] ) AND exit;
