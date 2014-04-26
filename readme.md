@@ -35,13 +35,13 @@ The metabox will only list public custom post types
 ## Screenshots ##
 
 ### 1. Custom post types admin menu metabox ###
-![Custom post types admin menu metabox](http://s.wordpress.org/extend/plugins/post-type archive link/screenshot-1.png)
+![Custom post types admin menu metabox](/screenshot-1.png)
 
 ### 2. Custom post types added to your menu ###
-![Custom post types added to your menu](http://s.wordpress.org/extend/plugins/post-type archive link/screenshot-2.png)
+![Custom post types added to your menu](/screenshot-2.png)
 
 ### 3. Custom post type 'Clients' in front-end menu with WordPress menu classes and current item styles ###
-![Custom post type 'Clients' in front-end menu with WordPress menu classes and current item styles](http://s.wordpress.org/extend/plugins/post-type archive link/screenshot-3.png)
+![Custom post type 'Clients' in front-end menu with WordPress menu classes and current item styles](/screenshot-3.png)
 
 
 
