@@ -67,6 +67,22 @@ class Post_Type_Archive_Links {
 	 * @access protected
 	 */
 	protected $cpts;
+	
+	/**
+	 * Handle backward compatibility for removed object variables
+	 */
+	public function __get( $name ) {
+		switch ( $name ) {
+			case 'metabox_id' :
+				return self::METABOXID;
+			case 'metabox_list_id' :
+				return self::METABOXLISTID;
+			case 'nonce' :
+				return self::NONCE;
+			case 'instance' :
+				return $this;
+		}
+	}
 
 	/**
 	 * Instantiates the class, add hooks and load domain
