@@ -27,16 +27,7 @@
             "role": "Developer"
         }
     ],
-    "support": {
-        "issues": "https://github.com/Giuseppe-Mazzapica/WordPress-Post-Type-Archive-Links/issues"
-    },
     "require": {
         "composer/installers": "~1.0"
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/Giuseppe-Mazzapica/WordPress-Post-Type-Archive-Links"
-        }
-    ]
+    }
 }
