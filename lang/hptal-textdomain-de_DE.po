@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: WordPress Post Type Archive Links v1.1\n"
+"Project-Id-Version: WordPress Post Type Archive Links v1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2013-09-19 12:31:49+0000\n"
+"PO-Revision-Date: 2014-04-26 21:15:34+0000\n"
 "Last-Translator: admin <joern@flyingletters.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -50,14 +50,19 @@ msgstr ""
 msgid "https://github.com/stephenharris/"
 msgstr ""
 
-#. translators: plugin header field 'Version'
-#: post-type-archive-links.php:0
-#@ hptal-textdomain
-msgid "1.1"
-msgstr ""
-
-#: post-type-archive-links.php:115
+#: post-type-archive-links.php:194
 #@ hptal-textdomain
 msgid "Post Type Archives"
 msgstr "Post-Type Archive"
+
+#. translators: plugin header field 'Version'
+#: post-type-archive-links.php:0
+#@ hptal-textdomain
+msgid "1.3"
+msgstr ""
+
+#: post-type-archive-links.php:378
+#@ hptal-textdomain
+msgid "Archive"
+msgstr ""
 
