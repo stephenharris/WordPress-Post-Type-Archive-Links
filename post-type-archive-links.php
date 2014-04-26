@@ -186,9 +186,6 @@ class Post_Type_Archive_Links {
 	 */
 	public function add_meta_box() {
 		
-		// Do nothing if no CPTs to handle
-		if ( empty( $this->cpts ) ) return;
-		
 		add_meta_box(
 			self::METABOXID,
 			__( 'Post Type Archives', 'hptal-textdomain' ),
@@ -243,8 +240,11 @@ class Post_Type_Archive_Links {
 	 */
 	public function metabox() {
 		
-		// Do nothing if no CPTs to handle	
-		if ( empty( $this->cpts ) ) return;
+		// Inform user no CPTs available to be shown.
+		if ( empty( $this->cpts ) ) {
+			echo '<p>' . __( 'No items.' ) . '</p>';
+			return;
+		}
 		
 		global $nav_menu_selected_id;
 
