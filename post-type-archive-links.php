@@ -91,8 +91,6 @@ class Post_Type_Archive_Links {
 		load_plugin_textdomain( 'hptal-textdomain' , false , $path . '/lang/' );
 		
 		add_action( 'admin_init', array( $this, 'add_meta_box' ) );
-		
-		add_action( 'admin_head-nav-menus.php', array( $this, 'setup_admin_hooks' ) );
 
 		add_filter( 'wp_setup_nav_menu_item',  array( $this, 'setup_archive_item' ) );
 
@@ -116,8 +114,6 @@ class Post_Type_Archive_Links {
 			}
 		
 			remove_action( 'admin_init', array( $this, 'add_meta_box' ) );
-			
-			remove_action( 'admin_head-nav-menus.php', array( $this, 'setup_admin_hooks' ) );
 
 			remove_filter( 'wp_setup_nav_menu_item',  array( $this, 'setup_archive_item' ) );
 
@@ -128,16 +124,6 @@ class Post_Type_Archive_Links {
 			remove_action( "wp_ajax_" . self::NONCE, array( $this, 'ajax_add_post_type' ) );
 		
 		}
-	}
-
-
-	/**
-	 * Adds all callbacks to the appropriate filters & hooks in the admin UI.
-	 * Only loads on the admin UI nav menu management page.
-	 * @return void
-	 */
-	public function setup_admin_hooks() {
-		add_action( 'admin_enqueue_scripts', array( $this, 'metabox_script' ) );
 	}
 
 
