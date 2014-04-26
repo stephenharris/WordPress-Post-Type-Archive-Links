@@ -272,13 +272,14 @@ class Post_Type_Archive_Links {
 	/**
 	 * AJAX Callback to create the menu item and add it to menu
 	 * @return string $HTML built with walk_nav_menu_tree()
+	 * use \Post_Type_Archive_Links::is_allowed() Check request and return choosen post types
 	 */
 	public function ajax_add_post_type() {
-		$this->is_allowed();
+		$post_types = $this->is_allowed();
 
 		// Create menu items and store IDs in array
 		$item_ids = array();
-		foreach ( array_values( $_POST['post_types'] ) as $post_type ) {
+		foreach ( $post_types as $post_type ) {
 			$post_type_obj = get_post_type_object( $post_type );
 
 			if( ! $post_type_obj )
@@ -348,7 +349,19 @@ class Post_Type_Archive_Links {
 		check_ajax_referer( self::NONCE, 'nonce' );
 
 		// Is a post type chosen?
-		empty( $_POST['post_types'] ) AND exit;
+		$post_types = filter_input_array(
+			INPUT_POST,
+			array(
+				'post_types' => array(
+					'filter' => FILTER_SANITIZE_STRING,
+					'flags' => FILTER_REQUIRE_ARRAY
+				)
+			),
+			true
+		);
+		empty( $post_types['post_types'] ) AND exit;
+		// return post types if chosen
+		return array_values( $post_types['post_types'] );
 	}
 
 
