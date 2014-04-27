@@ -52,9 +52,9 @@ can be shown using "show_{$cpt_slug}_archive_in_nav_menus" filter hook.
 ### 1.3 ###
 * Removed hooks from constructor, allowed plugin disabling: removing all hooks and text domain
 * Introduced "post_type_archive_links" filter hook to get an instance of plugin class
-* Do not add metabox if no CPTs having archive exists (avoid empty metabox)
 * Hide CPTs having 'has_archive' true, but 'publicly_queryable' and/or 'show_in_vav_menus' set to false
 * Introduced "show_{$cpt_slug}_archive_in_nav_menus" filter to force CPTs be added on metabox
+* Show "No items." when there are no CPTs available
 * Minor changes
 * Tested up to 3.9
 * Added Italian language. Thanks to [@giuseppe-mazzapica](http://gm.zoomlab.it).
