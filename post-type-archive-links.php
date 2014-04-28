@@ -4,7 +4,7 @@ defined( 'ABSPATH' ) OR exit;
 Plugin Name:  WordPress Post Type Archive Links
 Plugin URI:   https://github.com/stephenharris/WordPress-Post-Type-Archive-Links
 Description:  Adds a MetaBox to the Appearance > Menu page to add post type archive links
-Version:      1.2
+Version:      1.3
 Author:       Stephen Harris
 Author URI:   https://github.com/stephenharris/
 Author Email: contact@stephenharris.info
@@ -32,55 +32,91 @@ Domain Path:  /lang/
  */
 
 // Load at the default priority of 10
-add_action( 'plugins_loaded', array( 'Post_Type_Archive_Links', 'init' ) );
+add_action( 'plugins_loaded', array( new Post_Type_Archive_Links, 'init' ) );
 
 class Post_Type_Archive_Links {
 	/**
-	 * Instance of the class
-	 * @static
-	 * @access protected
-	 * @var object
+	 * True if class already inited
+	 * @access private
+	 * @var bool
 	 */
-	protected static $instance;
+	private $ininited;
 
 	/**
 	 * Nonce Value
-	 * @var string
+	 * @const \Post_Type_Archive_Links::NONCE
 	 */
-	public $nonce = 'hptal_nonce';
+	const NONCE = 'hptal_nonce';
 
 	/**
 	 * ID of the custom metabox
-	 * @var string
+	 * @const \Post_Type_Archive_Links::METABOXID
 	 */
-	public $metabox_id = 'hptal-metabox';
+	const METABOXID = 'hptal-metabox';
 
 	/**
 	 * ID of the custom post type list items
-	 * @var string
+	 * @const \Post_Type_Archive_Links::METABOXLISTID
 	 */
-	public $metabox_list_id = 'post-type-archive-checklist';
+	const METABOXLISTID = 'post-type-archive-checklist';
+	
+	/**
+	 * CPT objects that plugin should handle: having true
+	 * 'has_archive', 'publicly_queryable' and 'show_in_nav_menu'
+	 * @var array
+	 * @access protected
+	 */
+	protected $cpts;
+	
+	/**
+	 * Handle backward compatibility for removed object variables
+	 */
+	public function __get( $name ) {
+		switch ( $name ) {
+			case 'metabox_id' :
+				return self::METABOXID;
+			case 'metabox_list_id' :
+				return self::METABOXLISTID;
+			case 'nonce' :
+				return self::NONCE;
+			case 'instance' :
+				return $this;
+		}
+	}
 
 	/**
-	 * Instantiates the class
-	 * @return object $instance
+	 * Instantiates the class, add hooks and load domain
+	 * @return \Post_Type_Archive_Links
+	 * @use \Post_Type_Archive_Links::enable() Add hooks, load domain
 	 */
-	public static function init() {
-		is_null( self :: $instance ) AND self :: $instance = new self;
-		return self :: $instance;
+	public function init() {
+		if ( ! $this->ininited ) {
+			$this->ininited = true;
+			$this->enable( dirname( plugin_basename( __FILE__ ) ) );
+			
+			/**
+			This filter allow to access to current class instance
+			by calling $hptal = apply_filters( 'post_type_archive_links', NULL );
+			No singleton was harmed in the making of this plugin.
+			*/
+			add_filter( 'post_type_archive_links', array( $this, __FUNCTION__ ) );
+		}
+		return $this;
 	}
 
 
 	/**
-	 * Constructor.
-	 * @return \Post_Type_Archive_Links
+	 * Add plugin hooks and load domain.
+	 * @return void
+	 * @access private
 	 */
-	public function __construct() {
-		load_plugin_textdomain( 'hptal-textdomain' , false , dirname( plugin_basename( __FILE__ ) ) . '/lang/' );
+	private function enable( $path ) {
 		
-		add_action( 'admin_init', array( $this, 'add_meta_box' ) );
+		load_plugin_textdomain( 'hptal-textdomain' , false , $path . '/lang/' );
 		
-		add_action( 'admin_head-nav-menus.php', array( $this, 'setup_admin_hooks' ) );
+		add_action( 'admin_init', array( $this, 'get_cpts' ) );
+		
+		add_action( 'admin_init', array( $this, 'add_meta_box' ), 20 );
 
 		add_filter( 'wp_setup_nav_menu_item',  array( $this, 'setup_archive_item' ) );
 
@@ -88,17 +124,59 @@ class Post_Type_Archive_Links {
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'metabox_script' ) );
 		
-		add_action( "wp_ajax_" . $this->nonce, array( $this, 'ajax_add_post_type' ) );
+		add_action( "wp_ajax_" . self::NONCE, array( $this, 'ajax_add_post_type' ) );
+
 	}
-
-
+	
 	/**
-	 * Adds all callbacks to the appropriate filters & hooks in the admin UI.
-	 * Only loads on the admin UI nav menu management page.
+	 * Remove plugin hooks and unset domain if exists.
 	 * @return void
 	 */
-	public function setup_admin_hooks() {
-		add_action( 'admin_enqueue_scripts', array( $this, 'metabox_script' ) );
+	public function disable() {
+		if ( $this->ininited ) {
+			
+			if ( isset( $GLOBALS['l10n']['hptal-textdomain'] ) ) {
+				unset( $GLOBALS['l10n']['hptal-textdomain'] );
+			}
+			
+			remove_action( 'admin_init', array( $this, 'get_cpts' ) );
+		
+			remove_action( 'admin_init', array( $this, 'add_meta_box' ), 20 );
+
+			remove_filter( 'wp_setup_nav_menu_item',  array( $this, 'setup_archive_item' ) );
+
+			remove_filter( 'wp_nav_menu_objects', array( $this, 'maybe_make_current' ) );
+
+			remove_action( 'admin_enqueue_scripts', array( $this, 'metabox_script' ) );
+		
+			remove_action( "wp_ajax_" . self::NONCE, array( $this, 'ajax_add_post_type' ) );
+		
+		}
+	}
+	
+	/**
+	 * Get CPTs that plugin should handle: having true
+	 * 'has_archive', 'publicly_queryable' and 'show_in_nav_menu'
+	 * @return void
+	 */
+	public function get_cpts() {
+		$cpts = array();
+		$has_archive_cps = get_post_types(
+			array(
+				'has_archive'	=> true,
+				'_builtin' => false
+			),
+			'object'
+		);
+		foreach ( $has_archive_cps as $ptid => $pt ) {
+			$to_show = $pt->show_in_nav_menus && $pt->publicly_queryable;
+			if ( apply_filters( "show_{$ptid}_archive_in_nav_menus", $to_show, $pt ) ) {
+				$cpts[] = $pt;
+			}
+		}
+		if ( ! empty( $cpts ) ) {
+			$this->cpts = $cpts;
+		}
 	}
 
 
@@ -107,8 +185,9 @@ class Post_Type_Archive_Links {
 	 * @return void
 	 */
 	public function add_meta_box() {
+		
 		add_meta_box(
-			$this->metabox_id,
+			self::METABOXID,
 			__( 'Post Type Archives', 'hptal-textdomain' ),
 			array( $this, 'metabox' ),
 			'nav-menus',
@@ -127,6 +206,9 @@ class Post_Type_Archive_Links {
 	public function metabox_script( $hook ) {
 		if ( 'nav-menus.php' !== $hook )
 			return;
+		
+		// Do nothing if no CPTs to handle
+		if ( empty( $this->cpts ) ) return;
 
 		wp_register_script(
 			'hptal-ajax-script',
@@ -143,10 +225,10 @@ class Post_Type_Archive_Links {
 			'hptal_obj',
 			array(
 				'ajaxurl'    => admin_url( 'admin-ajax.php' ),
-				'nonce'      => wp_create_nonce( $this->nonce ),
-				'metabox_id' => $this->metabox_id,
-				'metabox_list_id' => $this->metabox_list_id,
-				'action'     => $this->nonce
+				'nonce'      => wp_create_nonce( self::NONCE ),
+				'metabox_id' => self::METABOXID,
+				'metabox_list_id' => self::METABOXLISTID,
+				'action'     => self::NONCE
 			)
 		);
 	}
@@ -157,19 +239,17 @@ class Post_Type_Archive_Links {
 	 * @return string $html
 	 */
 	public function metabox() {
+		
+		// Inform user no CPTs available to be shown.
+		if ( empty( $this->cpts ) ) {
+			echo '<p>' . __( 'No items.' ) . '</p>';
+			return;
+		}
+		
 		global $nav_menu_selected_id;
 
-		// Get post types
-		$post_types = get_post_types(
-			array(
-				'has_archive'	=> true,
-				'_builtin' => false
-			),
-			'object'
-		);
-
-		$html = '<ul id="'. $this->metabox_list_id .'">';
-		foreach ( $post_types as $pt ) {
+		$html = '<ul id="'. self::METABOXLISTID .'">';
+		foreach ( $this->cpts as $pt ) {
 			$html .= sprintf(
 				'<li><label><input type="checkbox" value ="%s" />&nbsp;%s</label></li>',
 				esc_attr( $pt->name ),
@@ -192,13 +272,14 @@ class Post_Type_Archive_Links {
 	/**
 	 * AJAX Callback to create the menu item and add it to menu
 	 * @return string $HTML built with walk_nav_menu_tree()
+	 * use \Post_Type_Archive_Links::is_allowed() Check request and return choosen post types
 	 */
 	public function ajax_add_post_type() {
-		$this->is_allowed();
+		$post_types = $this->is_allowed();
 
 		// Create menu items and store IDs in array
 		$item_ids = array();
-		foreach ( array_values( $_POST['post_types'] ) as $post_type ) {
+		foreach ( $post_types as $post_type ) {
 			$post_type_obj = get_post_type_object( $post_type );
 
 			if( ! $post_type_obj )
@@ -265,10 +346,22 @@ class Post_Type_Archive_Links {
 		! current_user_can( 'edit_theme_options' ) AND die( '-1' );
 
 		// Nonce check
-		check_ajax_referer( $this->nonce, 'nonce' );
+		check_ajax_referer( self::NONCE, 'nonce' );
 
 		// Is a post type chosen?
-		empty( $_POST['post_types'] ) AND exit;
+		$post_types = filter_input_array(
+			INPUT_POST,
+			array(
+				'post_types' => array(
+					'filter' => FILTER_SANITIZE_STRING,
+					'flags' => FILTER_REQUIRE_ARRAY
+				)
+			),
+			true
+		);
+		empty( $post_types['post_types'] ) AND exit;
+		// return post types if chosen
+		return array_values( $post_types['post_types'] );
 	}
 
 
