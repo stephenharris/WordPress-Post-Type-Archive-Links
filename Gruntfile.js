@@ -14,6 +14,22 @@ module.exports = function(grunt) {
 		all: [ '*.js', '!*.min.js' ]
 	},
 	
+	uglify: {
+		options: {
+			compress: {
+				dead_code: true
+			},
+			banner: '/*! <%= pkg.name %> <%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd HH:MM") %> */\n'
+		},
+		build: {
+			files: [{
+				expand: true,     // Enable dynamic expansion.
+				src: ['*.js', '!*.min.js', '!Gruntfile.js'], // Actual pattern(s) to match.
+				ext: '.min.js',   // Dest filepaths will have this extension.
+			}]
+		}
+	},
+	
 	copy: {
 		// Copy the plugin to a versioned release directory
 		main: {
@@ -80,7 +96,7 @@ module.exports = function(grunt) {
 
 grunt.registerTask( 'test', [ 'jshint' ] );
 
-grunt.registerTask( 'compile', [ 'wp_readme_to_markdown' ] );
+grunt.registerTask( 'compile', [ 'wp_readme_to_markdown', 'uglify' ] );
 
 grunt.registerTask( 'build', [ 'test', 'compile', 'clean', 'copy' ] );
 

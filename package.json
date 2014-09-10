@@ -19,6 +19,7 @@
     "grunt-contrib-clean": "~0.5.0",
     "grunt-contrib-copy": "~0.4.1",
     "grunt-contrib-jshint": "~0.6.3",
+    "grunt-contrib-uglify": "~0.5.0",
     "grunt-po2mo": "~0.1.0",
     "grunt-wp-deploy": "~1.0.3",
     "grunt-wp-readme-to-markdown": "~0.8.0",

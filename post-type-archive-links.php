@@ -210,11 +210,13 @@ class Post_Type_Archive_Links {
 		// Do nothing if no CPTs to handle
 		if ( empty( $this->cpts ) ) return;
 
+		$suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? '' : '.min';
+		
 		wp_register_script(
 			'hptal-ajax-script',
-			plugins_url( 'metabox.js', __FILE__ ),
+			plugins_url( "metabox{$suffix}.js", __FILE__ ),
 			array( 'jquery' ),
-			filemtime( plugin_dir_path( __FILE__ ).'metabox.js' ),
+			filemtime( plugin_dir_path( __FILE__ ) . "metabox{$suffix}.js" ),
 			true
 		);
 		wp_enqueue_script( 'hptal-ajax-script' );
