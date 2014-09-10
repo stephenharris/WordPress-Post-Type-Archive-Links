@@ -32,7 +32,7 @@ module.exports = function(grunt) {
 				'!composer.phar',
 				'!composer.json',
 			],
-			dest: 'build/<%= pkg.name %> /'
+			dest: 'build/<%= pkg.name %>/'
 		}		
 	},
 	
