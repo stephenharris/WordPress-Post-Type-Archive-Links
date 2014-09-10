@@ -2,8 +2,8 @@
 Contributors: stephenharris, F J Kaiser, ryancurban, giuseppe.mazzapica
 Tags: post type archives, menu link, archives, navigation, metabox, administration user interface
 Requires at least: 3.3
-Tested up to: 3.9
-Stable tag: 1.3
+Tested up to: 4.0
+Stable tag: 1.3.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl.txt
 
@@ -11,9 +11,13 @@ Creates a metabox to the Appearance > Menu page to add custom post type archive 
 
 == Description ==
 
-Post Type Archive Link creates a metabox on the Appearance > Menu admin page. This lists your custom post types and allows you to add links to each archive page in your WordPress menus.
+Post Type Archive Link creates a metabox on the Appearance > Menu admin page. 
+This lists your custom post types and allows you to add links to each archive page in your WordPress menus.
 
-The great thing about this plugin is it integrates fully with the WordPress menus functionality, and so you will notice that your custom post type archive links that are added to your menus take advantage of the typical menu classes aded by WordPress, including the current page class.
+The plug-in uses WordPress' default menu classes for current pages, current page parent and current page ancestor.
+ 
+By default all post types with archives (and not registered by core) are available for adding to your menu. 
+You can forcibly revent a particlar post type from appearing using the `show_{$posttype}_archive_in_nav_menus` hook.
 
 
 == Installation ==
@@ -27,11 +31,16 @@ Installation is standard and straight forward.
 
 == Frequently Asked Questions ==
 
+= I can't see in the 'post type' metabox on the Apperance > Menus screen =
+
+View the "screen options" (top right), and ensure that "Post Type Archives" is checked.
+
+
 = Why are some post types missing? =
 
-The metabox will only list custom post types registered with non-falsey 'has_archive', 'publicly_queryable' or 'show_in_vav_menus'.
-CPTs having true 'has_archive' but false 'publicly_queryable' and/or 'show_in_vav_menus'
-can be shown using "show_{$cpt_slug}_archive_in_nav_menus" filter hook.
+The metabox will only list custom post types registered with non-falsey `has_archive`, `publicly_queryable` or `show_in_vav_menus`.
+
+CPTs having true `has_archive' but false `publicly_queryable` and/or `show_in_vav_menus` can be shown using `show_{$cpt_slug}_archive_in_nav_menus` filter hook.
 
 
 == Screenshots ==
@@ -44,14 +53,15 @@ can be shown using "show_{$cpt_slug}_archive_in_nav_menus" filter hook.
 == Changelog ==
 
 = 1.3 =
+* Make submit button available for translation. Thanks to [@antwortzeit](https://github.com/antwortzeit).
 * Removed hooks from constructor, allowed plugin disabling: removing all hooks and text domain
 * Introduced "post_type_archive_links" filter hook to get an instance of plugin class
 * Hide CPTs having 'has_archive' true, but 'publicly_queryable' and/or 'show_in_vav_menus' set to false
 * Introduced "show_{$cpt_slug}_archive_in_nav_menus" filter to force CPTs be added on metabox
 * Show "No items." when there are no CPTs available
-* Minor changes
-* Tested up to 3.9
+* Tested up to 4.0
 * Added Italian language. Thanks to [@giuseppe.mazzapica](http://gm.zoomlab.it).
+* Updated readme
 
 = 1.2 =
 * Use has_archive rather than public. [See #13](https://github.com/stephenharris/WordPress-Post-Type-Archive-Links/issues/13)
