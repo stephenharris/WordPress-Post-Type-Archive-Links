@@ -18,3 +18,5 @@ $RECYCLE.BIN/
 .tox
 vendor/
 composer.lock
+*.min.js
+*.mo
