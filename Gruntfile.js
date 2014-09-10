@@ -6,6 +6,14 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
 	pkg: grunt.file.readJSON('package.json'),
+	
+	jshint: {
+		options: {
+			reporter: require('jshint-stylish'),
+		},
+		all: [ '*.js', '!*.min.js' ]
+	},
+	
 	copy: {
 		// Copy the plugin to a versioned release directory
 		main: {
@@ -27,7 +35,7 @@ module.exports = function(grunt) {
 			dest: 'build/<%= pkg.name %> /'
 		}		
 	},
-
+	
 	wp_readme_to_markdown: {
 		convert:{
 			files: {
@@ -36,8 +44,8 @@ module.exports = function(grunt) {
 		},
 	},
 	
-    checkrepo: {
-    	deploy: {
+	checkrepo: {
+		deploy: {
             tag: {
                 eq: '<%= pkg.version %>',    // Check if highest repo tag is equal to pkg.version
             },
@@ -50,45 +58,31 @@ module.exports = function(grunt) {
 		//Clean up build folder
 		main: ['build/<%= pkg.name %>']
 	},
-
-	copy: {
-		// Copy the plugin to a versioned release directory
-		main: {
-			src:  [
-				'**',
-				'!node_modules/**',
-				'!build/**',
-				'!.git/**',
-				'!tests/**',
-				'!vendor/**',
-				'!Gruntfile.js',
-				'!package.json',
-				'!.gitignore',
-				'!.gitmodules',
-				'!*~',
-				'!composer.lock',
-				'!composer.phar',
-				'!composer.json',
-			],
-			dest: 'build/<%= pkg.name %>/'
-		}		
+	
+	po2mo: {
+		files: {
+			src: 'lang/*.po',
+			expand: true,
+		},
 	},
 
-    wp_deploy: {
-    	deploy:{
-            options: {
-        		svn_user: 'stephenharris',
-        		plugin_slug: '<%= pkg.name %>',
-        		build_dir: 'build/<%= pkg.name %>/'
-            },
-    	}
-    }
+	wp_deploy: {
+		deploy:{
+			options: {
+				svn_user: 'stephenharris',
+				plugin_slug: '<%= pkg.name %>',
+				build_dir: 'build/<%= pkg.name %>/'
+			},
+		}
+	}
 });
 
 
-grunt.registerTask( 'readme', [ 'wp_readme_to_markdown' ] );
-  
-grunt.registerTask( 'build', [ 'clean', 'copy' ] );
+grunt.registerTask( 'test', [ 'jshint' ] );
+
+grunt.registerTask( 'compile', [ 'wp_readme_to_markdown' ] );
+
+grunt.registerTask( 'build', [ 'test', 'compile', 'clean', 'copy' ] );
 
 grunt.registerTask( 'deploy', [ 'checkbranch:master', 'checkrepo:deploy', 'build', 'wp_deploy'] ); //Deploy via svn
 
