@@ -57,6 +57,9 @@ module.exports = function(grunt) {
 			files: {
 				'readme.md': 'readme.txt'
 			},
+			options:{
+				screenshot_url: 'http://s.w.org/plugins/post-type-archive-links/{screenshot}.png'
+			}
 		},
 	},
 	
