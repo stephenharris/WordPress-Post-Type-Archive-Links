@@ -350,17 +350,34 @@ class Post_Type_Archive_Links {
 		// Nonce check
 		check_ajax_referer( self::NONCE, 'nonce' );
 
-		// Is a post type chosen?
-		$post_types = filter_input_array(
-			INPUT_POST,
-			array(
-				'post_types' => array(
-					'filter' => FILTER_SANITIZE_STRING,
-					'flags' => FILTER_REQUIRE_ARRAY
+		if(version_compare(PHP_VERSION, '4.5.0') >= 0) {
+
+			// Is a post type chosen?
+			$post_types = filter_input_array(
+				INPUT_POST,
+				array(
+					'post_types' => array(
+						'filter' => FILTER_SANITIZE_STRING,
+						'flags' => FILTER_REQUIRE_ARRAY
+					)
+				),
+				true
+			);
+
+		} else {
+
+			$post_types = filter_input_array(
+				INPUT_POST,
+				array(
+					'post_types' => array(
+						'filter' => FILTER_SANITIZE_STRING,
+						'flags' => FILTER_REQUIRE_ARRAY
+					)
 				)
-			),
-			true
-		);
+			);
+
+		}
+		
 		empty( $post_types['post_types'] ) AND exit;
 		// return post types if chosen
 		return array_values( $post_types['post_types'] );
