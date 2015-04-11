@@ -358,9 +358,9 @@ class Post_Type_Archive_Links {
 					'filter' => FILTER_SANITIZE_STRING,
 					'flags' => FILTER_REQUIRE_ARRAY
 				)
-			),
-			true
+			)
 		);
+		
 		empty( $post_types['post_types'] ) AND exit;
 		// return post types if chosen
 		return array_values( $post_types['post_types'] );
