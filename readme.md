@@ -2,8 +2,8 @@
 **Contributors:** stephenharris, F J Kaiser, ryancurban, giuseppe.mazzapica  
 **Tags:** post type archives, menu link, archives, navigation, metabox, administration user interface  
 **Requires at least:** 3.3  
-**Tested up to:** 4.0  
-**Stable tag:** 1.3.0  
+**Tested up to:** 4.1.1  
+**Stable tag:** 1.3.1  
 **License:** GPLv3 or later  
 **License URI:** http://www.gnu.org/licenses/gpl.txt  
 
@@ -57,6 +57,9 @@ CPTs having true `has_archive' but false `publicly_queryable` and/or `show_in_va
 
 
 ## Changelog ##
+
+### 1.3.1 - 12th April 2015 ###
+* Fixes incomptability with PHP 5.3 and older.
 
 ### 1.3 ###
 * Make submit button available for translation. Thanks to [@antwortzeit](https://github.com/antwortzeit).
