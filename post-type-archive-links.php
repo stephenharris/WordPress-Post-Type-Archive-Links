@@ -156,7 +156,7 @@ class Post_Type_Archive_Links {
 	
 	/**
 	 * Get CPTs that plugin should handle: having true
-	 * 'has_archive', 'publicly_queryable' and 'show_in_nav_menu'
+	 * 'has_archive', 'publicly_queryable' and 'show_in_nav_menus'
 	 * @return void
 	 */
 	public function get_cpts() {
